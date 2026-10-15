@@ -41,3 +41,12 @@ of each section.
 - Default `SHOPIFY_API_VERSION=2026-10` (the spec's example was `2025-07`). Shopify releases
   quarterly; on 2026-10-15 the docs list `2026-10` as the newest stable version (`2027-01` is a
   release candidate). Configurable through the env var.
+
+## Scraping (M3)
+- **SSRF guard**: http/https only, no credentials, blocks localhost/.local/.internal names and every non-unicast range (loopback, RFC1918, link-local incl. 169.254.169.254, CGNAT incl. 100.100.100.200, ULA incl. fd00:ec2::254, IPv4-mapped). Checked before each request, on every redirect hop, and again at socket connect time (guarded DNS lookup) to defeat DNS rebinding. The headless browser routes every sub-request through the same check and re-checks the redirect chain.
+- **`SCRAPE_ALLOWLIST`** (comma-separated `host:port`) is the only way to fetch a private address. It exists so tests and the local verification run can scrape the fixture site on `127.0.0.1`. Leave it empty in normal use.
+- **Robots.txt**: user-agent token `StoreForgeBot`; disallowed pages are not fetched (warning `robots_disallowed`). 4xx/missing robots → allowed; 5xx → treated as disallow (RFC 9309).
+- **Walls**: CAPTCHA / anti-bot / login pages produce a warning and empty product data; nothing is solved or bypassed.
+- **Field priority**: JSON-LD → microdata → OpenGraph → DOM. So JSON-LD `material` wins over a spec-table row.
+- **Browser**: Playwright Chromium, launched from `CHROMIUM_PATH` when set (useful where the Playwright-managed browser revision is unavailable), otherwise Playwright's default. If no browser is installed the scraper degrades with a `browser_unavailable` warning.
+- **Images**: only the primary URL's images are downloaded (competitor URLs are for positioning only). Max 10 scraped images, all flagged `third_party_source`.

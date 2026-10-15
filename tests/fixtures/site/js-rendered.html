@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Loading…</title></head>
+<body>
+  <div id="app">Loading…</div>
+  <script>
+    setTimeout(function () {
+      document.title = "Linen Throw Pillow Cover";
+      var desc = "A stonewashed linen pillow cover with a hidden zipper. ";
+      document.getElementById("app").innerHTML =
+        '<h1>Linen Throw Pillow Cover</h1>' +
+        '<span class="price">$29.00</span>' +
+        '<img src="/images/dripper-2.jpg" width="1200" height="1200" alt="Pillow">' +
+        '<p>' + new Array(30).join(desc) + '</p>';
+    }, 300);
+  </script>
+</body>
+</html>

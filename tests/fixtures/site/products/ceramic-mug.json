@@ -1,0 +1,57 @@
+{
+  "product": {
+    "title": "Speckled Ceramic Mug",
+    "body_html": "<p>A 350 ml speckled stoneware mug with a comfortable handle. Microwave and dishwasher safe.</p>",
+    "vendor": "Fixture Ceramics",
+    "product_type": "Mugs",
+    "tags": "mug, ceramic, kitchen",
+    "options": [
+      { "name": "Color", "values": ["Oat", "Charcoal"] },
+      { "name": "Size", "values": ["350 ml", "500 ml"] }
+    ],
+    "variants": [
+      {
+        "title": "Oat / 350 ml",
+        "price": "24.00",
+        "sku": "MUG-OAT-350",
+        "option1": "Oat",
+        "option2": "350 ml",
+        "image_id": 1
+      },
+      {
+        "title": "Oat / 500 ml",
+        "price": "28.00",
+        "sku": "MUG-OAT-500",
+        "option1": "Oat",
+        "option2": "500 ml",
+        "image_id": 1
+      },
+      {
+        "title": "Charcoal / 350 ml",
+        "price": "24.00",
+        "sku": "MUG-CHA-350",
+        "option1": "Charcoal",
+        "option2": "350 ml",
+        "image_id": 2
+      },
+      {
+        "title": "Charcoal / 500 ml",
+        "price": "28.00",
+        "sku": "MUG-CHA-500",
+        "option1": "Charcoal",
+        "option2": "500 ml",
+        "image_id": 2
+      }
+    ],
+    "images": [
+      { "id": 1, "src": "/images/dripper-1.jpg", "alt": "Oat mug", "width": 1200, "height": 1200 },
+      {
+        "id": 2,
+        "src": "/images/dripper-2.jpg",
+        "alt": "Charcoal mug",
+        "width": 1200,
+        "height": 1200
+      }
+    ]
+  }
+}
