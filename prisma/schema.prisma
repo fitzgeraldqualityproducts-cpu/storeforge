@@ -1,0 +1,141 @@
+// StoreForge database schema.
+// Zod schemas in src/lib/schemas are the source of truth for the shape of every JSON column;
+// the repository layer (src/lib/db/*) parses JSON columns through those schemas on read.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Project {
+  id          String   @id
+  name        String
+  status      String   @default("draft") // ProjectStatus
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  /// JSON: ProjectInputs
+  inputs      String   @default("{}")
+  /// JSON: RightsAck
+  rightsAck   String   @default("{\"accepted\":false,\"at\":null}")
+  /// JSON: StepsState (status + staleness per wizard step)
+  steps       String   @default("{}")
+  /// JSON: SourceExtraction[]
+  extractions String   @default("[]")
+  /// JSON: ProductAnalysis | null
+  analysis    String?
+  /// JSON: BrandKit | null
+  brandKit    String?
+  /// JSON: ProductListing | null
+  listing     String?
+  /// JSON: StoreContent | null
+  content     String?
+  /// JSON: ListingMeta (similarity report, pricing inputs, confirm markers)
+  listingMeta String?
+
+  assets  Asset[]
+  jobs    Job[]
+  aiCalls AiCall[]
+  exports ExportRecord[]
+}
+
+model Asset {
+  id            String   @id
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  origin        String // "upload" | "scraped"
+  sourceUrl     String?
+  originalPath  String
+  processedPath String?
+  mimeType      String
+  width         Int
+  height        Int
+  bytes         Int
+  phash         String?
+  qualityScore  Int?
+  /// JSON: ImageFlag[]
+  flags         String   @default("[]")
+  qualityNote   String?
+  altText       String   @default("")
+  position      Int      @default(0)
+  variantKey    String?
+  isHero        Boolean  @default(false)
+  discarded     Boolean  @default(false)
+  discardReason String?
+  role          String? // hero | angle | lifestyle | detail | infographic
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([projectId])
+}
+
+model Job {
+  id         String    @id
+  projectId  String
+  project    Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  type       String
+  status     String    @default("queued") // queued | running | succeeded | failed
+  step       String    @default("")
+  percent    Int       @default(0)
+  message    String    @default("")
+  /// JSON payload for the handler
+  payload    String    @default("{}")
+  /// JSON partial/final result summary
+  result     String?
+  error      String?
+  attempts   Int       @default(0)
+  createdAt  DateTime  @default(now())
+  startedAt  DateTime?
+  finishedAt DateTime?
+
+  @@index([projectId, createdAt])
+  @@index([status])
+}
+
+model AiCall {
+  id           String   @id
+  projectId    String?
+  project      Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  task         String
+  model        String
+  mode         String // live | fixture
+  inputTokens  Int      @default(0)
+  outputTokens Int      @default(0)
+  latencyMs    Int      @default(0)
+  attempts     Int      @default(1)
+  success      Boolean
+  error        String?
+  createdAt    DateTime @default(now())
+
+  @@index([projectId])
+}
+
+model ExportRecord {
+  id               String   @id
+  projectId        String
+  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  type             String // bundle | shopify
+  createdAt        DateTime @default(now())
+  artifactPath     String?
+  /// JSON: ShopifyPushResult
+  shopifyResult    String?
+  /// JSON: ValidationReport
+  validationReport String   @default("{}")
+  /// JSON: export options (image mode, csv format, ...)
+  options          String   @default("{}")
+  publicToken      String?
+  publicExpiresAt  DateTime?
+  storeDomain      String?
+
+  @@index([projectId])
+}
+
+model ScrapeCache {
+  url       String   @id
+  /// JSON: SourceExtraction
+  result    String
+  createdAt DateTime @default(now())
+}

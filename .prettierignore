@@ -1,0 +1,6 @@
+node_modules
+.next
+data
+src/generated
+package-lock.json
+tests/fixtures/**/*.html
