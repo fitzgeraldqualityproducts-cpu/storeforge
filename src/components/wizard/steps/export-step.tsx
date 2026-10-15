@@ -20,6 +20,7 @@ import type { BundleOptions } from "@/lib/schemas";
 import { cn } from "@/lib/utils";
 import { useActiveJob, useJobRunning, useStartJob, useWizard } from "../context";
 import { EmptyState, StepShell } from "../step-shell";
+import { ShopifyPushCard } from "./shopify-push";
 
 const EXPORT_JOBS = ["export_bundle"];
 
@@ -354,12 +355,13 @@ export function ExportStep() {
     <StepShell
       step="export"
       jobTypes={EXPORT_JOBS}
-      description="Download everything as a ZIP for Shopify's importers, or copy individual pieces."
+      description="Download everything as a ZIP for Shopify's importers, push straight to your store, or copy individual pieces."
     >
       {ready ? (
         <>
           <BundleCard />
           <ExportsCard exports={view.exports} />
+          <ShopifyPushCard />
           <CopyCard />
         </>
       ) : (

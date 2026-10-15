@@ -23,6 +23,10 @@ const EnvSchema = z.object({
       .regex(/^\d{4}-(01|04|07|10)$/, "Shopify API versions look like 2026-10")
       .default("2026-10"),
   ),
+  /** Download URL of a Dawn theme ZIP for the optional "new unpublished theme" push step. */
+  SHOPIFY_THEME_SOURCE_URL: z.preprocess(emptyToUndefined, z.string().url().optional()),
+  /** Encrypts the session-only Shopify token cookie. Random per process when unset. */
+  SESSION_SECRET: z.preprocess(emptyToUndefined, z.string().min(32).optional()),
   REMOVE_BG_PROVIDER: z.preprocess(
     emptyToUndefined,
     z.enum(["none", "removebg", "photoroom"]).default("none"),

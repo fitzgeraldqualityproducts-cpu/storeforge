@@ -31,7 +31,7 @@ export function exportImageName(handle: string, position: number) {
 
 const isLocalUrl = (u: string) => /^(https?:\/\/)(localhost|127\.|0\.0\.0\.0|\[::1\])/i.test(u);
 
-function requireReady(project: ProjectRecord) {
+export function requireReady(project: ProjectRecord) {
   if (!project.listing) throw new UserFacingError("Write the product listing before exporting.");
   if (!project.content) throw new UserFacingError("Write the store content before exporting.");
   if (!project.brandKit?.selectedName)
@@ -40,7 +40,10 @@ function requireReady(project: ProjectRecord) {
 }
 
 /** Make sure every active image has a processed file (runs the image step if needed). */
-async function processedAssets(ctx: JobContext, at: (f: number) => number): Promise<ImageAsset[]> {
+export async function processedAssets(
+  ctx: JobContext,
+  at: (f: number) => number,
+): Promise<ImageAsset[]> {
   let assets = await orderedActiveAssets(ctx.projectId);
   if (assets.some((a) => !a.processedPath)) {
     await runImages(ctx, { vision: visionFor(ctx.projectId), range: [at(0.05), at(0.35)] });

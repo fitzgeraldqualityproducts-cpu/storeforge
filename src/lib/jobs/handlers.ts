@@ -2,6 +2,7 @@ import "server-only";
 import { runAnalyze, scrapeFallbackFor } from "@/lib/pipeline/analyze";
 import { runBrandDetails, runBrandNames } from "@/lib/pipeline/brand";
 import { runExportBundle } from "@/lib/export/bundle";
+import { runShopifyPush } from "@/lib/shopify/run";
 import { runContent } from "@/lib/pipeline/content";
 import { runListing, runSeo } from "@/lib/pipeline/listing";
 import { runRegenerate } from "@/lib/pipeline/regenerate";
@@ -51,6 +52,7 @@ export function registerAllHandlers() {
   );
   registerHandler("regenerate", (ctx) => runRegenerate(ctx));
   registerHandler("export_bundle", (ctx) => runExportBundle(ctx));
+  registerHandler("export_shopify", (ctx) => runShopifyPush(ctx));
   registerHandler("pipeline", (ctx) =>
     runPipeline(ctx, { forceScrape: Boolean(ctx.payload.forceScrape) }),
   );

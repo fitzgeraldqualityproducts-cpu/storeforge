@@ -28,8 +28,23 @@ export const BundleOptions = z.object({
 });
 export type BundleOptions = z.infer<typeof BundleOptions>;
 
+/** Push steps in the order they run (spec Section 9). */
+export const SHOPIFY_STEPS = [
+  "shop",
+  "images",
+  "product",
+  "inventory",
+  "collections",
+  "pages",
+  "policies",
+  "menus",
+  "theme",
+] as const;
+export const ShopifyStep = z.enum(SHOPIFY_STEPS);
+export type ShopifyStep = z.infer<typeof ShopifyStep>;
+
 export const ShopifyStepResult = z.object({
-  step: z.string(),
+  step: ShopifyStep,
   label: z.string(),
   status: z.enum(["pending", "skipped", "planned", "succeeded", "failed"]),
   detail: z.string().default(""),
@@ -43,6 +58,8 @@ export const ShopifyResourceMap = z.object({
   collectionIds: z.record(z.string(), z.string()).default({}),
   pageIds: z.record(z.string(), z.string()).default({}),
   menuIds: z.record(z.string(), z.string()).default({}),
+  /** Shop policy GIDs by page handle (shipping-policy, refund-policy…). */
+  policyIds: z.record(z.string(), z.string()).default({}),
   fileIds: z.record(z.string(), z.string()).default({}),
   themeId: z.string().nullable().default(null),
 });
@@ -57,6 +74,10 @@ export const ShopifyPushResult = z.object({
   steps: z.array(ShopifyStepResult),
   resources: ShopifyResourceMap,
   plannedOperations: z.array(z.string()).default([]),
+  /** Unpublished themes in the store, offered as targets for the theme files. */
+  themes: z.array(z.object({ id: z.string(), name: z.string(), role: z.string() })).default([]),
+  shopName: z.string().default(""),
+  warnings: z.array(z.string()).default([]),
 });
 export type ShopifyPushResult = z.infer<typeof ShopifyPushResult>;
 
@@ -64,7 +85,14 @@ export const ShopifyPushRequest = z.object({
   dryRun: z.boolean().default(true),
   confirm: z.boolean().default(false),
   includeTheme: z.boolean().default(false),
-  onlySteps: z.array(z.string()).optional(),
+  /** Existing unpublished theme to write the theme files into; a new Dawn copy when unset. */
+  themeId: z
+    .string()
+    .regex(/^gid:\/\/shopify\/OnlineStoreTheme\/\d+$/)
+    .nullable()
+    .default(null),
+  /** Retry just these steps (resources from earlier pushes are reused). */
+  onlySteps: z.array(ShopifyStep).min(1).optional(),
 });
 export type ShopifyPushRequest = z.infer<typeof ShopifyPushRequest>;
 
