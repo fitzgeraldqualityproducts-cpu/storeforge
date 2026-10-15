@@ -93,6 +93,7 @@ export function publicCapabilities() {
     removeBgConfigured: e.REMOVE_BG_PROVIDER !== "none" && Boolean(e.REMOVE_BG_API_KEY),
     maxUploadMb: e.MAX_UPLOAD_MB,
     appBaseUrl: e.APP_BASE_URL,
+    publicImageBaseUrl: e.PUBLIC_IMAGE_BASE_URL ?? null,
     appBaseUrlIsLocal: /^(https?:\/\/)(localhost|127\.|0\.0\.0\.0|\[::1\])/i.test(e.APP_BASE_URL),
     isDev: process.env.NODE_ENV !== "production",
   };
