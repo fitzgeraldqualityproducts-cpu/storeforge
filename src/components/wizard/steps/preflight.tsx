@@ -140,7 +140,10 @@ export function StoreReadyCard() {
           <PartyPopperIcon className="size-6 text-ember" aria-hidden="true" />
           {path === "push" ? `${name} is in Shopify` : `${name} is ready to import`}
           {view.preflight.ok ? null : (
-            <span className="sr-only">, with {view.preflight.failed} checklist items to fix</span>
+            <span className="sr-only">
+              , with {view.preflight.failed} checklist{" "}
+              {view.preflight.failed === 1 ? "item" : "items"} to fix
+            </span>
           )}
         </CardTitle>
         <CardDescription>

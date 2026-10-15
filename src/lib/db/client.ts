@@ -7,7 +7,9 @@ import { PrismaClient } from "@/generated/prisma/client";
 function resolveDbUrl(): string {
   const raw = process.env.DATABASE_URL?.trim() || "file:./data/storeforge.db";
   const file = raw.replace(/^file:/, "");
-  const abs = path.isAbsolute(file) ? file : path.resolve(process.cwd(), file);
+  const abs = path.isAbsolute(file)
+    ? file
+    : path.resolve(/*turbopackIgnore: true*/ process.cwd(), file);
   mkdirSync(path.dirname(abs), { recursive: true });
   return abs;
 }

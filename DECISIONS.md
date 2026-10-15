@@ -138,3 +138,21 @@ of each section.
 - **Warnings don't block:** no cost entered (margin can't be checked), `[CONFIRM]` markers, and another StoreForge project using the same product handle (fine for different stores, a clash for the same one).
 - **Completion screen** appears once a bundle exists or a push created the product. It shows the checklist as badges and a "Next steps in Shopify" list tailored to the path: bundle (import CSV, paste pages, apply theme files) or push (review the draft, publish hidden pages and collections, preview the unpublished theme). Both cover theme, domain, payments, shipping profiles, taxes, legal review, a test order and removing the password; after a push each step links to that page of the store's admin.
 - **The "doesn't verify supplier reliability, product safety, or regulatory compliance" disclaimer** sits in the export step above the export options, and is repeated at the end of the bundle README.
+
+## End-to-end tests, docs and cleanup (M12)
+
+- **E2E against a production build**: Playwright runs `next build && next start` in fixture AI
+  mode with a throwaway database and data folder in the OS temp directory. A dev server with its
+  data inside the project kept full-reloading the page whenever the watcher saw SQLite writes,
+  and a production build is also what merchants run.
+- **What it covers**: the fixture URL goes through the real UI ("Save & generate my store") to a
+  downloaded ZIP with every Section 8 file, a CSV that re-validates and valid Dawn JSON; three
+  photos and no URL give a store with `[CONFIRM]` markers; every step at 375/768/1440 px with no
+  sideways scroll; and keyboard-only project creation and step navigation.
+- **No invented prices**: a photos-only product with no cost, target or market price keeps a
+  price of 0, so the pre-flight's "Required fields" now fails on a missing price and the bundle's
+  validation report flags it. The e2e test enters a price the way a merchant would.
+- **Generated-output lint**: a unit test runs the full fixture pipeline for a URL project and a
+  photos-only project, builds both bundles, and scans the listing, brand kit, content and every
+  text file in the ZIPs with the guardrail checker. The "#1" claim pattern no longer matches
+  Markdown headings like `## 1. Import the product`.

@@ -13,6 +13,8 @@ describe("guardrails", () => {
     expect(rules("Clinically proven to relieve back pain")).toContain("medical_claim");
     expect(rules("This pillow cures insomnia")).toContain("medical_claim");
     expect(rules("Our #1 best-selling dripper")).toContain("unverified_superlative");
+    expect(rules("We are # 1 for pour-over")).toContain("unverified_superlative");
+    expect(rules("## 1. Import the product")).not.toContain("unverified_superlative");
     expect(rules("As seen on TV")).toContain("fake_credential");
     expect(rules("Ships from our AliExpress partner")).toContain("supplier_mention");
   });
@@ -49,5 +51,70 @@ describe("guardrails", () => {
       ),
     ).toBe(true);
     expect(detectSourceRisks("A ceramic mug for coffee.")).toEqual([]);
+  });
+});
+
+describe("generated output lint", () => {
+  /**
+   * Spec acceptance: no fabricated reviews, urgency or medical claims in any generated output.
+   * Runs the whole fixture pipeline (URL and photos-only), builds the bundle, and lints every
+   * text file in the ZIP plus the stored listing, brand kit and store content.
+   */
+  it("finds no guardrail violations in anything StoreForge generates", async () => {
+    const { default: AdmZip } = await import("adm-zip");
+    const { prisma } = await import("@/lib/db/client");
+    const { createProject, getProject } = await import("@/lib/db/projects");
+    const { runExportBundle } = await import("@/lib/export/bundle");
+    const { ingestImage } = await import("@/lib/images/ingest");
+    const { runContent } = await import("@/lib/pipeline/content");
+    const { findViolationsDeep } = await import("@/lib/guardrails");
+    const { fromDataRelative } = await import("@/lib/security/paths");
+    const { readFileSync } = await import("node:fs");
+    const path = await import("node:path");
+    const { dripperProject } = await import("../support/dripper");
+
+    const ctx = (projectId: string, payload: Record<string, unknown> = {}) => ({
+      jobId: "t",
+      projectId,
+      type: "content" as const,
+      payload,
+      progress: async () => undefined,
+    });
+    const fromUrl = await dripperProject("Lint (URL)");
+    const photosOnly = await createProject("Lint (photos)");
+    for (const n of [1, 2, 3]) {
+      await ingestImage(
+        photosOnly.id,
+        readFileSync(path.join(__dirname, `../fixtures/site/images/dripper-${n}.jpg`)),
+        { origin: "upload" },
+      );
+    }
+
+    const problems: string[] = [];
+    for (const p of [fromUrl, photosOnly]) {
+      await runContent(ctx(p.id));
+      const project = await getProject(p.id);
+      for (const [name, value] of Object.entries({
+        listing: project.listing,
+        brandKit: project.brandKit,
+        content: project.content,
+      })) {
+        expect(value, name).not.toBeNull();
+        for (const v of findViolationsDeep(value, name))
+          problems.push(`${p.name} ${v.path}: ${v.rule} "${v.match}"`);
+      }
+      const res = await runExportBundle(
+        ctx(p.id, { imageMode: "upload_after", csvFormat: "current" }),
+      );
+      const row = await prisma.exportRecord.findUniqueOrThrow({ where: { id: res.exportId } });
+      const zip = new AdmZip(fromDataRelative(row.artifactPath!));
+      for (const e of zip.getEntries()) {
+        if (!/\.(md|html|csv|json)$/.test(e.entryName)) continue;
+        for (const v of findViolationsDeep(zip.readAsText(e), e.entryName)) {
+          problems.push(`${p.name} ${v.path}: ${v.rule} "${v.match}"`);
+        }
+      }
+    }
+    expect(problems).toEqual([]);
   });
 });

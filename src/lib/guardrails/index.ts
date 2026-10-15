@@ -94,7 +94,7 @@ const RULES: Rule[] = [
   },
   {
     rule: "unverified_superlative",
-    re: /(?:#\s?1\b|\bnumber\s+one\b|\bno\.\s?1\b|\bbest[- ]selling\b|\bbestseller\b|\bworld'?s\s+(?:best|first|finest)\b|\bbest\s+in\s+the\s+(?:world|market|industry)\b|\bguaranteed\s+results\b|\b100%\s+(?:effective|guaranteed|safe)\b)/giu,
+    re: /(?:(?<![#&\w])#\s?1\b|\bnumber\s+one\b|\bno\.\s?1\b|\bbest[- ]selling\b|\bbestseller\b|\bworld'?s\s+(?:best|first|finest)\b|\bbest\s+in\s+the\s+(?:world|market|industry)\b|\bguaranteed\s+results\b|\b100%\s+(?:effective|guaranteed|safe)\b)/giu,
     message: "Unverifiable superlative. Keep it only if you can prove it.",
   },
   {

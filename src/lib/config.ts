@@ -65,7 +65,8 @@ export function resetEnvCache() {
 }
 
 export function dataDir(...parts: string[]) {
-  return path.resolve(process.cwd(), env().DATA_DIR, ...parts);
+  // Runtime data, not source: keep it out of build-time file tracing.
+  return path.resolve(/*turbopackIgnore: true*/ process.cwd(), env().DATA_DIR, ...parts);
 }
 
 export function isAiConfigured() {

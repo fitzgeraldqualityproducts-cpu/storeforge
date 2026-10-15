@@ -72,6 +72,8 @@ export function runPreflight(i: PreflightInput): Preflight {
     if (!listing.descriptionHtml.replace(/<[^>]+>/g, "").trim()) missing.push("description");
     if (!listing.vendor.trim()) missing.push("vendor");
     if (!listing.productType.trim()) missing.push("product type");
+    // Never invented: with no cost, target or market price the suggestion stays at 0.
+    if (listing.variants.some((v) => !(v.price > 0))) missing.push("price");
   }
   if (!brand?.selectedName) missing.push("store name (brand step)");
   if (!content) missing.push("store content");
@@ -81,7 +83,7 @@ export function runPreflight(i: PreflightInput): Preflight {
     status: missing.length ? "fail" : "pass",
     detail: missing.length
       ? `Missing: ${missing.join(", ")}.`
-      : "Title, description, vendor, type, store name and content are set.",
+      : "Title, description, vendor, type, price, store name and content are set.",
     step: !listing ? "listing" : !brand?.selectedName ? "brand" : !content ? "content" : "listing",
   });
 
