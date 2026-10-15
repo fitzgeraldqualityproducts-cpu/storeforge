@@ -1,15 +1,14 @@
-# Render Blueprint: one Docker web service with a persistent disk for the SQLite database,
-# uploads and exports. Deploy with the "Deploy to Render" button in README.md.
+# Render Blueprint: one Docker web service on Render's free plan. Free instances have no
+# persistent disk, so the database, uploads and exports reset whenever the service restarts or
+# sleeps (after about 15 minutes without visits). To keep data, switch to plan: starter and add:
+#   disk: { name: storeforge-data, mountPath: /app/data, sizeGB: 1 }
+# Deploy with the "Deploy to Render" button in README.md.
 services:
   - type: web
     name: storeforge
     runtime: docker
-    plan: starter # persistent disks need a paid instance
+    plan: free
     healthCheckPath: /api/health
-    disk:
-      name: storeforge-data
-      mountPath: /app/data
-      sizeGB: 1
     envVars:
       - key: APP_PASSWORD
         sync: false # you're asked for it on first deploy; the browser prompts for it

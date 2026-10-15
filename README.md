@@ -82,10 +82,15 @@ don't fit. The repo ships a `Dockerfile` and a Render Blueprint (`render.yaml`):
 4. To use real AI, set `ANTHROPIC_API_KEY` and change `AI_MODE` to `live` under the service's
    **Environment** tab.
 
-The Blueprint uses Render's Starter instance with a 1 GB disk mounted at `/app/data`, because
-free instances can't keep a disk. `APP_BASE_URL` defaults to Render's public address, so
-"Public URL mode" image links work without extra setup. Any Docker host works the same way:
-mount persistent storage at `/app/data` and set `APP_PASSWORD`.
+The Blueprint uses Render's **free** plan. Free instances have no persistent disk and go to sleep
+after about 15 minutes without visits, so projects, uploads and exports are wiped whenever the
+service sleeps or restarts. Finish a store in one sitting and download the ZIP or push to
+Shopify before you leave. The first visit after a sleep takes up to a minute to wake up, and the
+free instance's 512 MB of memory can be tight for scraping JS-heavy pages. To keep data, change
+the plan to Starter and add a disk mounted at `/app/data` (see the comment in `render.yaml`).
+`APP_BASE_URL` defaults to Render's public address, so "Public URL mode" image links work
+without extra setup. Any Docker host works the same way: mount persistent storage at
+`/app/data` and set `APP_PASSWORD`.
 
 ## How it works
 
