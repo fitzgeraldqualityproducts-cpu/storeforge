@@ -1,5 +1,6 @@
 import "server-only";
 import { runExtract } from "@/lib/pipeline/extract";
+import { runImages } from "@/lib/pipeline/images";
 import { registerHandler } from "./runner";
 
 /** Registers every job type's handler. Called once when the runner starts. */
@@ -15,4 +16,5 @@ export function registerAllHandlers() {
       })),
     };
   });
+  registerHandler("images", async (ctx) => runImages(ctx, { options: ctx.payload }));
 }

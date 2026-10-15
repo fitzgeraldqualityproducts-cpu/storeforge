@@ -495,15 +495,13 @@ export function parseProductHtml(html: string, pageUrl: string): ParsedPage {
     ...[meta($, ["og:image:secure_url", "og:image"])]
       .filter(Boolean)
       .map((url) => ({ url: url!, alt: "", width: null, height: null, source: "og" as const })),
-    ...[meta($, ["twitter:image", "twitter:image:src"])]
-      .filter(Boolean)
-      .map((url) => ({
-        url: url!,
-        alt: "",
-        width: null,
-        height: null,
-        source: "twitter" as const,
-      })),
+    ...[meta($, ["twitter:image", "twitter:image:src"])].filter(Boolean).map((url) => ({
+      url: url!,
+      alt: "",
+      width: null,
+      height: null,
+      source: "twitter" as const,
+    })),
     ...imagesFromDom($),
   ].map((img) => ({ ...img, url: absolutize(img.url, pageUrl) }));
 

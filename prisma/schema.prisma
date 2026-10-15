@@ -35,6 +35,8 @@ model Project {
   content     String?
   /// JSON: ListingMeta (similarity report, pricing inputs, confirm markers)
   listingMeta String?
+  /// JSON: ImageProcessOptions
+  imageOptions String @default("{}")
 
   assets  Asset[]
   jobs    Job[]

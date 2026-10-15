@@ -76,12 +76,10 @@ export async function runExtract(
         `Downloading up to ${Math.min(room, candidates.length)} product images`,
       );
       const { images } = await downloadImages(
-        candidates
-          .slice(0, room + 4)
-          .map((c) => ({
-            url: c.url,
-            fallbackUrl: c.originalUrl !== c.url ? c.originalUrl : undefined,
-          })),
+        candidates.slice(0, room + 4).map((c) => ({
+          url: c.url,
+          fallbackUrl: c.originalUrl !== c.url ? c.originalUrl : undefined,
+        })),
         policy,
       );
       let added = 0;

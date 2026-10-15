@@ -82,7 +82,7 @@ export function Wizard({
 
   if (view.isLoading) {
     return (
-      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-8 lg:grid-cols-[260px_1fr]">
+      <div className="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)] gap-6 px-4 py-8 lg:grid-cols-[260px_1fr]">
         <Skeleton className="h-96" />
         <div className="grid gap-4">
           <Skeleton className="h-12 w-1/2" />
@@ -143,8 +143,8 @@ export function Wizard({
             </div>
           </div>
         </header>
-        <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-10">
-          <aside className="lg:sticky lg:top-20 lg:self-start">
+        <div className="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)] gap-6 px-4 py-6 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-10">
+          <aside className="min-w-0 lg:sticky lg:top-20 lg:self-start">
             <Stepper
               steps={view.data.project.steps}
               current={step}

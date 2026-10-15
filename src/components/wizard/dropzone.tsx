@@ -20,7 +20,16 @@ export function assetUrl(
   asset: Pick<ImageAsset, "id" | "processedPath">,
   processed = false,
 ) {
-  return `/api/projects/${projectId}/assets/${asset.id}${processed && asset.processedPath ? "?v=processed" : ""}`;
+  if (processed && asset.processedPath) {
+    // The processed file name carries a content digest, so it doubles as a cache buster.
+    const rev =
+      asset.processedPath
+        .split("/")
+        .pop()
+        ?.replace(/\.webp$/, "") ?? "";
+    return `/api/projects/${projectId}/assets/${asset.id}?v=processed&r=${encodeURIComponent(rev)}`;
+  }
+  return `/api/projects/${projectId}/assets/${asset.id}`;
 }
 
 export function Dropzone() {

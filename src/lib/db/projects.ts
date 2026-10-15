@@ -4,6 +4,7 @@ import { z } from "zod";
 import type { Project as ProjectRow } from "@/generated/prisma/client";
 import {
   BrandKit,
+  ImageProcessOptions,
   ListingMeta,
   ProductAnalysis,
   ProductListing,
@@ -43,6 +44,7 @@ export interface ProjectRecord {
   listing: ProductListing | null;
   listingMeta: ListingMeta | null;
   content: StoreContent | null;
+  imageOptions: ImageProcessOptions;
 }
 
 export function hydrate(row: ProjectRow): ProjectRecord {
@@ -63,6 +65,7 @@ export function hydrate(row: ProjectRow): ProjectRecord {
     listing: parseJson(ProductListing.nullable(), row.listing, null),
     listingMeta: parseJson(ListingMeta.nullable(), row.listingMeta, null),
     content: parseJson(StoreContent.nullable(), row.content, null),
+    imageOptions: parseJson(ImageProcessOptions, row.imageOptions, ImageProcessOptions.parse({})),
   };
 }
 
@@ -116,6 +119,7 @@ export interface ProjectUpdate {
   listing?: ProductListing | null;
   listingMeta?: ListingMeta | null;
   content?: StoreContent | null;
+  imageOptions?: ImageProcessOptions;
   /** Explicit step status changes applied after staleness propagation. */
   steps?: StepsPatch;
   /** Which step's data changed; downstream steps are marked stale. */
@@ -152,6 +156,7 @@ export async function updateProject(id: string, u: ProjectUpdate): Promise<Proje
     if (u.listing !== undefined) data.listing = js(u.listing);
     if (u.listingMeta !== undefined) data.listingMeta = js(u.listingMeta);
     if (u.content !== undefined) data.content = js(u.content);
+    if (u.imageOptions !== undefined) data.imageOptions = JSON.stringify(u.imageOptions);
     const updated = await tx.project.update({ where: { id }, data });
     return hydrate(updated);
   });

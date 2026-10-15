@@ -31,6 +31,8 @@ export const RiskFlag = z.object({
 export type RiskFlag = z.infer<typeof RiskFlag>;
 
 export const ProductAnalysis = z.object({
+  /** Plain descriptive name of what the product is (not a brand name). */
+  productName: z.string().default(""),
   productType: z.string(),
   summary: z.string(),
   materials: z.array(z.string()).default([]),

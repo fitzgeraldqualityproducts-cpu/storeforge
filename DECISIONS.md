@@ -50,3 +50,12 @@ of each section.
 - **Field priority**: JSON-LD → microdata → OpenGraph → DOM. So JSON-LD `material` wins over a spec-table row.
 - **Browser**: Playwright Chromium, launched from `CHROMIUM_PATH` when set (useful where the Playwright-managed browser revision is unavailable), otherwise Playwright's default. If no browser is installed the scraper degrades with a `browser_unavailable` warning.
 - **Images**: only the primary URL's images are downloaded (competitor URLs are for positioning only). Max 10 scraped images, all flagged `third_party_source`.
+
+## Images (M4)
+- **Perceptual hash**: 64-bit DCT pHash computed after smoothing at 128px (blur σ=2), duplicates at Hamming ≤ 6 as the spec requires. A plain 9×8 dHash put two genuinely different angles of the same product on the same backdrop only 5 bits apart, which would have discarded real gallery shots. On the fixtures, re-encoded/resized copies (300–1000px, JPEG q40–85, WebP q50) stayed ≤ 6 bits and different shots ≥ 30 bits apart.
+- **Duplicate winner**: highest pixel count; ties go to uploads over scraped images, then earlier position.
+- **Quality score** (0–100): 35% resolution (short side 300→1600px), 35% sharpness (variance of the 4-neighbour Laplacian at 512px), 20% exposure (mean luma / clipped shadows; bright white backgrounds are not penalised), 10% aspect ratio; minus 35 for a watermark, 15 for text overlay, 40 for "product not visible" (vision flags). Images under 30 are set aside automatically, but never so that fewer than 3 remain.
+- **Processing**: EXIF auto-rotate → flatten transparency on the canvas colour → trim uniform borders (skipped if it would remove more than 60% of a side) → fit within 2048px (never upscale) → optional square canvas with an 8% margin on white or the brand background → WebP q85 + JPEG q85 (mozjpeg). sharp writes no metadata unless asked, so EXIF/GPS/XMP are stripped (tested).
+- **Ordering**: a hero you pick by hand stays first; otherwise vision roles order the gallery hero → angle → lifestyle → detail → infographic, then quality. Watermarked/text-overlay images are never the hero when a clean image exists.
+- **Background removal**: remove.bg or Photoroom via `REMOVE_BG_PROVIDER`/`REMOVE_BG_API_KEY`; the toggle is disabled when unconfigured.
+- Processed file names include a content digest, which doubles as the browser cache-buster. Export names (`<handle>-<position>.webp`) are assigned when the bundle is built.
