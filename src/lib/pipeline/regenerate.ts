@@ -15,7 +15,11 @@ import { truncateAtWord } from "@/lib/listing/text";
 import { RegenerateRequest, type ProductListing } from "@/lib/schemas";
 import { runAnalyze } from "./analyze";
 import { runBrandDetails, runBrandNames } from "./brand";
+import { rewriteContentField, runContent } from "./content";
 import { runListing, runSeo, sourceShingles } from "./listing";
+
+/** Store content fields (besides `pages.<handle>`) that support rewrites. */
+export const CONTENT_FIELDS = ["announcementBar", "hero.headline", "hero.subheadline"];
 
 /** Listing fields that support per-field regenerate / shorten / change tone. */
 export const LISTING_FIELDS: Record<
@@ -122,7 +126,8 @@ export async function runRegenerate(ctx: JobContext) {
     case "alt_text":
       return regenerateAltText(ctx);
     case "content":
+      return runContent(ctx, { instruction: req.instruction });
     case "content_page":
-      throw new UserFacingError("Store content regeneration isn't available in this build.");
+      return rewriteContentField(ctx, req);
   }
 }

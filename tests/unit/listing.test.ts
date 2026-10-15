@@ -1,11 +1,8 @@
-import { readFileSync } from "node:fs";
-import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { resetEnvCache } from "@/lib/config";
 import { listAssets } from "@/lib/db/assets";
-import { createProject, getProject, updateProject } from "@/lib/db/projects";
+import { createProject, getProject } from "@/lib/db/projects";
 import { findViolationsDeep } from "@/lib/guardrails";
-import { ingestImage } from "@/lib/images/ingest";
 import type { JobContext } from "@/lib/jobs/runner";
 import { COMPARE_AT_WARNING, charmRound, suggestPrice } from "@/lib/listing/pricing";
 import {
@@ -17,8 +14,8 @@ import {
 } from "@/lib/listing/similarity";
 import { confirmMarkers, toHandle, truncateAtWord } from "@/lib/listing/text";
 import { buildMatrix, parseGrams, skuPrefix, validateVariants } from "@/lib/listing/variants";
-import { parseProductHtml } from "@/lib/scrape/parse";
-import { ProductListing, SourceExtraction } from "@/lib/schemas";
+import { ProductListing } from "@/lib/schemas";
+import { dripperProject } from "../support/dripper";
 
 const fake = vi.hoisted(() => ({
   queue: [] as unknown[],
@@ -214,35 +211,6 @@ describe("variant matrix", () => {
     expect(parseGrams("heavy")).toBeNull();
   });
 });
-
-async function dripperProject(name: string) {
-  const p = await createProject(name);
-  const html = readFileSync(path.join(__dirname, "../fixtures/site/product.html"), "utf8");
-  const parsed = parseProductHtml(html, "https://shop.example/product.html");
-  await updateProject(p.id, {
-    inputs: {
-      urls: ["https://shop.example/product.html"],
-      context: { ...(await getProject(p.id)).inputs.context, tone: "Cozy" },
-    },
-    extractions: [
-      SourceExtraction.parse({
-        ...parsed,
-        url: "https://shop.example/product.html",
-        sourceDomain: "shop.example",
-        fetchMethod: "static",
-        fetchedAt: new Date().toISOString(),
-      }),
-    ],
-  });
-  for (const n of [1, 2, 3]) {
-    await ingestImage(
-      p.id,
-      readFileSync(path.join(__dirname, `../fixtures/site/images/dripper-${n}.jpg`)),
-      { origin: "upload" },
-    );
-  }
-  return p;
-}
 
 describe("listing step (fixture mode)", () => {
   it("generates a valid listing from the product facts", async () => {

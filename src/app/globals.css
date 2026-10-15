@@ -183,3 +183,12 @@
 .confirm-mark {
   @apply rounded-sm bg-warning/25 px-0.5 text-foreground;
 }
+.prose-storefront :is(h2, h3) {
+  font-family: var(--sf-heading);
+}
+.prose-storefront :is(th, td) {
+  border-color: color-mix(in srgb, var(--sf-text) 18%, transparent);
+}
+.prose-storefront .confirm-mark {
+  color: var(--sf-text);
+}

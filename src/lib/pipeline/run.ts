@@ -5,6 +5,7 @@ import { getProject, updateProject } from "@/lib/db/projects";
 import type { JobContext } from "@/lib/jobs/runner";
 import { runAnalyze, scrapeFallbackFor } from "./analyze";
 import { runBrand } from "./brand";
+import { runContent } from "./content";
 import { runListing } from "./listing";
 import { runExtract } from "./extract";
 import { runImages, type VisionDescriber } from "./images";
@@ -28,7 +29,7 @@ interface Stage {
 
 /**
  * "Generate everything": every step in order with progress mapped onto one bar.
- * extract → analyze → brand → listing → images (a later milestone appends content).
+ * extract → analyze → brand → listing → images → content.
  */
 export async function runPipeline(ctx: JobContext, opts: { forceScrape?: boolean } = {}) {
   const project = await getProject(ctx.projectId);
@@ -47,12 +48,13 @@ export async function runPipeline(ctx: JobContext, opts: { forceScrape?: boolean
     },
     { name: "analyze", weight: 30, run: (c, range) => runAnalyze(c, { range }) },
     { name: "brand", weight: 15, run: (c, range) => runBrand(c, { range }) },
-    { name: "listing", weight: 20, run: (c, range) => runListing(c, { range }) },
+    { name: "listing", weight: 15, run: (c, range) => runListing(c, { range }) },
     {
       name: "images",
-      weight: 20,
+      weight: 15,
       run: (c, range) => runImages(c, { vision: visionFor(c.projectId), range }),
     },
+    { name: "content", weight: 15, run: (c, range) => runContent(c, { range }) },
   ];
   const total = stages.reduce((s, x) => s + x.weight, 0);
   let done = 0;
@@ -65,7 +67,7 @@ export async function runPipeline(ctx: JobContext, opts: { forceScrape?: boolean
     }
   } finally {
     const p = await getProject(ctx.projectId);
-    const allReady = (["analysis", "brand", "listing", "images"] as const).every(
+    const allReady = (["analysis", "brand", "listing", "images", "content"] as const).every(
       (s) => p.steps[s].status === "ready",
     );
     await updateProject(ctx.projectId, { status: allReady ? "ready" : "draft" });

@@ -8,7 +8,6 @@ import {
   MinusIcon,
   PlusIcon,
   RefreshCwIcon,
-  ScissorsIcon,
   SearchIcon,
   ShieldCheckIcon,
   SparklesIcon,
@@ -32,9 +31,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { COMPARE_AT_WARNING, suggestPrice, type PricingInputs } from "@/lib/listing/pricing";
 import { SIMILARITY_THRESHOLD } from "@/lib/listing/similarity";
+import { highlightPlaceholders } from "@/lib/listing/text";
 import { buildMatrix, skuPrefix, validateVariants, variantValues } from "@/lib/listing/variants";
 import {
-  TONES,
   type ListingMeta,
   type ProductListing,
   type ProductOption,
@@ -43,6 +42,7 @@ import {
 import { cn, formatMoney } from "@/lib/utils";
 import { useActiveJob, useJobRunning, usePatchProject, useStartJob, useWizard } from "../context";
 import { EditableText } from "../editable";
+import { FieldActions as SharedFieldActions } from "../field-actions";
 import { Field } from "../field";
 import { EmptyState, StepShell } from "../step-shell";
 
@@ -62,40 +62,9 @@ function Counter({ value, max, min }: { value: string; max: number; min?: number
   );
 }
 
-/** Regenerate / Make shorter / Change tone for one listing field. */
 function FieldActions({ field, label }: { field: string; label: string }) {
-  const start = useStartJob();
-  const busy = useJobRunning(LISTING_JOBS) || start.isPending;
-  const run = (operation: "regenerate" | "shorten" | "change_tone", tone?: string) =>
-    start.mutate({
-      path: "regenerate",
-      body: { section: "listing_field", field, operation, ...(tone ? { tone } : {}) },
-    });
   return (
-    <div
-      className="flex flex-wrap items-center gap-1.5"
-      role="group"
-      aria-label={`${label} AI actions`}
-    >
-      <Button size="xs" variant="ghost" disabled={busy} onClick={() => run("regenerate")}>
-        <RefreshCwIcon /> Regenerate
-      </Button>
-      <Button size="xs" variant="ghost" disabled={busy} onClick={() => run("shorten")}>
-        <ScissorsIcon /> Make shorter
-      </Button>
-      <Select value="" onValueChange={(tone) => run("change_tone", tone)} disabled={busy}>
-        <SelectTrigger className="h-7 w-auto gap-1 text-xs" aria-label={`Change tone of ${label}`}>
-          <SelectValue placeholder="Change tone" />
-        </SelectTrigger>
-        <SelectContent>
-          {TONES.map((t) => (
-            <SelectItem key={t} value={t}>
-              {t}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+    <SharedFieldActions section="listing_field" field={field} label={label} jobs={LISTING_JOBS} />
   );
 }
 
@@ -301,11 +270,6 @@ function BasicsCard({ listing, save }: { listing: ProductListing; save: Save }) 
   );
 }
 
-function highlightConfirm(html: string) {
-  // The HTML was sanitized server-side; placeholders contain no markup.
-  return html.replace(/\[CONFIRM:[^\]<]*\]/g, (m) => `<mark class="confirm-mark">${m}</mark>`);
-}
-
 function DescriptionCard({ listing, save }: { listing: ProductListing; save: Save }) {
   const [draft, setDraft] = useState(listing.descriptionHtml);
   return (
@@ -326,7 +290,7 @@ function DescriptionCard({ listing, save }: { listing: ProductListing; save: Sav
           <TabsContent value="preview">
             <div
               className="prose-store mt-3 rounded-lg border bg-background p-4"
-              dangerouslySetInnerHTML={{ __html: highlightConfirm(listing.descriptionHtml) }}
+              dangerouslySetInnerHTML={{ __html: highlightPlaceholders(listing.descriptionHtml) }}
             />
           </TabsContent>
           <TabsContent value="html">

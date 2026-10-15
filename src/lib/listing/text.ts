@@ -51,3 +51,14 @@ export function confirmMarkers(...texts: string[]): string[] {
   for (const t of texts) for (const m of t.matchAll(CONFIRM_RE)) out.add(m[1]!.trim());
   return [...out];
 }
+
+/**
+ * Wrap [CONFIRM: …] markers and [BRACKETED PLACEHOLDERS] in <mark> for previews. Only for HTML
+ * that was already sanitized; placeholders contain no markup.
+ */
+export function highlightPlaceholders(html: string): string {
+  return html.replace(
+    /\[CONFIRM:[^\]<]*\]|\[[A-Z0-9][A-Z0-9 &'’()/.,+-]{0,60}\]/g,
+    (m) => `<mark class="confirm-mark">${m}</mark>`,
+  );
+}

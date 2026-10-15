@@ -93,3 +93,13 @@ of each section.
 - **SEO lengths are enforced in code** (title 60, meta description 155, handle 60, alt text 125) after the model answers, so a long answer is truncated at a word boundary instead of failing the step.
 - **Field-level AI actions** (regenerate, make shorter, change tone) go through one `regenerate` job type. The job runner allows one job of a type per project at a time, so double-clicks are idempotent. Rewrites must keep every `[CONFIRM: …]` marker and pass the guardrail scan or they retry.
 - **Dev note:** a stale Turbopack cache in `.next/dev` can put the dev server into a reload loop; `rm -rf .next/dev` and restart fixes it.
+
+## Store content (M8)
+
+- **The model writes words; code decides structure.** Page handles, policy URLs (`/policies/shipping-policy` etc.), the "All Products" collection (handle `all`), the main and footer menus, the hero button link (`/products/<handle>`), store name and currency are built in `src/lib/content/structure.ts`. Menus are rebuilt from the saved pages and collections on every save, so a link can never point at a page that doesn't exist. Rename menu items in Shopify.
+- **Social proof is always a fixed placeholder.** The model only writes the section heading; the note is a constant ("Add real customer reviews here once you have them…"), restored on every save even if the client sends something else.
+- **Policies are templates with `[BRACKETED PLACEHOLDERS]`.** The "not legal advice; have counsel review" notice is shown in the app only. Generated page text containing a legal-advice disclaimer is sent back to the model. Placeholders are listed with where they appear; "Fill everywhere" replaces one across all content (escaped in HTML). Pre-flight accepts either no placeholders left or the merchant's acknowledgement.
+- **Validation fed back to the model:** all seven homepage section types, 8–10 FAQ items, all seven required pages, no "all" collection from the model, no other brands, and the guardrail scan. Payment providers and carriers aren't named in copy (prompted), because brand checks would otherwise reject "Apple Pay".
+- **Field rewrites** (`content_page`): `pages.<handle>`, `announcementBar`, `hero.headline`, `hero.subheadline`. Rewrites must keep every placeholder.
+- **Storefront preview** is a React mock styled with the brand palette and Google Fonts, labelled as an approximation. It uses CSS container queries, so the Mobile toggle (390 px frame) shows the real mobile layout rather than a scaled desktop.
+- **"Generate everything"** now ends with the content stage, and a project is "ready" only when analysis, brand, listing, images and content are all ready.

@@ -7,7 +7,7 @@ import { renderLogo } from "@/lib/brand/logo";
 import { refreshListingMeta } from "@/lib/listing/meta";
 import { deleteProject, getProject, updateProject, type ProjectUpdate } from "@/lib/db/projects";
 import { getProjectView } from "@/lib/db/views";
-import { sanitizeListingHtml, sanitizePageHtml } from "@/lib/html/sanitize";
+import { sanitizeListingHtml } from "@/lib/html/sanitize";
 import { projectDir } from "@/lib/security/paths";
 import {
   BrandKit,
@@ -19,6 +19,8 @@ import {
   StoreContent,
   type WizardStep,
 } from "@/lib/schemas";
+
+import { finalizeContent } from "@/lib/pipeline/content";
 
 export const dynamic = "force-dynamic";
 
@@ -125,14 +127,12 @@ export const PATCH = route<Ctx>(async (req, { params }) => {
     touch("listing");
   }
   if (body.content !== undefined) {
-    update.content = {
-      ...body.content,
-      pages: body.content.pages.map((p) => ({ ...p, bodyHtml: sanitizePageHtml(p.bodyHtml) })),
-      collections: body.content.collections.map((c) => ({
-        ...c,
-        descriptionHtml: sanitizePageHtml(c.descriptionHtml),
-      })),
-    };
+    // Sanitized and normalized server-side: menus, required pages and the review placeholder
+    // are rebuilt from what was saved, whatever the client sent.
+    update.content = finalizeContent(
+      { ...current, listing: update.listing ?? current.listing },
+      body.content,
+    );
     touch("content");
   }
   if (Object.keys(body).length === 0) throw new HttpError(400, "Nothing to update");

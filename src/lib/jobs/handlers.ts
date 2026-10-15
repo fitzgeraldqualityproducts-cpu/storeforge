@@ -1,6 +1,7 @@
 import "server-only";
 import { runAnalyze, scrapeFallbackFor } from "@/lib/pipeline/analyze";
 import { runBrandDetails, runBrandNames } from "@/lib/pipeline/brand";
+import { runContent } from "@/lib/pipeline/content";
 import { runListing, runSeo } from "@/lib/pipeline/listing";
 import { runRegenerate } from "@/lib/pipeline/regenerate";
 import { runExtract } from "@/lib/pipeline/extract";
@@ -41,6 +42,12 @@ export function registerAllHandlers() {
     }),
   );
   registerHandler("seo", (ctx) => runSeo(ctx));
+  registerHandler("content", (ctx) =>
+    runContent(ctx, {
+      instruction:
+        typeof ctx.payload.instruction === "string" ? ctx.payload.instruction : undefined,
+    }),
+  );
   registerHandler("regenerate", (ctx) => runRegenerate(ctx));
   registerHandler("pipeline", (ctx) =>
     runPipeline(ctx, { forceScrape: Boolean(ctx.payload.forceScrape) }),
