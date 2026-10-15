@@ -4,6 +4,7 @@ import type { Job as JobRow } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db/client";
 import { log } from "@/lib/log";
 import { JobType, type JobStatus, type JobView } from "@/lib/schemas";
+import { UserFacingError } from "@/lib/errors";
 import { emitProjectEvent } from "./events";
 
 export interface JobContext {
@@ -17,13 +18,7 @@ export interface JobContext {
 
 export type JobHandler = (ctx: JobContext) => Promise<unknown>;
 
-/** User-facing error: its message is shown verbatim in the UI. */
-export class UserFacingError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "UserFacingError";
-  }
-}
+export { UserFacingError };
 
 interface RunnerState {
   handlers: Map<string, JobHandler>;

@@ -5,14 +5,13 @@ import { Button } from "@/components/ui/button";
 
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
-  const next = resolvedTheme === "dark" ? "light" : "dark";
   return (
     <Button
       variant="ghost"
       size="icon-sm"
-      onClick={() => setTheme(next)}
-      aria-label={`Switch to ${next} mode`}
-      title={`Switch to ${next} mode`}
+      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+      aria-label="Toggle dark mode"
+      title="Toggle dark mode"
     >
       <SunIcon className="hidden dark:block" />
       <MoonIcon className="dark:hidden" />

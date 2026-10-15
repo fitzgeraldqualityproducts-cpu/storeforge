@@ -34,7 +34,6 @@
     "cheerio": "^1.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "file-type": "^22.2.0",
     "heic-convert": "^2.1.0",
     "ipaddr.js": "^2.5.0",
     "lucide-react": "^1.57.0",
