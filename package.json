@@ -20,6 +20,16 @@
     "format:check": "prettier --check .",
     "fixtures": "tsx scripts/generate-fixtures.ts"
   },
+  "allowScripts": {
+    "@prisma/engines": true,
+    "prisma": true,
+    "better-sqlite3@12.11.1": true,
+    "better-sqlite3@13.0.3": false,
+    "esbuild": true,
+    "fsevents": true,
+    "unrs-resolver": true,
+    "sharp": true
+  },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.134.0",
     "@dnd-kit/core": "^6.3.1",

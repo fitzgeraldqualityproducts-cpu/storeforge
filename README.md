@@ -19,7 +19,8 @@ npm run dev          # http://localhost:3000
 ```
 
 `npm install` generates the Prisma client; `npm run dev` creates the SQLite database in `data/`
-on first run. Without an API key the app still opens, and tells you AI steps need
+on first run. npm 12 and newer only run dependency install scripts listed under `allowScripts` in
+`package.json`; the native SQLite driver and Prisma's engines are approved there. Without an API key the app still opens, and tells you AI steps need
 `ANTHROPIC_API_KEY`. To try every step offline with deterministic sample output:
 
 ```bash
