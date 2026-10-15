@@ -1,5 +1,6 @@
 import "server-only";
 import { runAnalyze, scrapeFallbackFor } from "@/lib/pipeline/analyze";
+import { runBrandDetails, runBrandNames } from "@/lib/pipeline/brand";
 import { runExtract } from "@/lib/pipeline/extract";
 import { runImages } from "@/lib/pipeline/images";
 import { runPipeline, visionFor } from "@/lib/pipeline/run";
@@ -24,6 +25,12 @@ export function registerAllHandlers() {
   registerHandler("analyze", (ctx) => runAnalyze(ctx));
   registerHandler("images", (ctx) =>
     runImages(ctx, { options: ctx.payload, vision: visionFor(ctx.projectId) }),
+  );
+  registerHandler("brand_names", (ctx) => runBrandNames(ctx));
+  registerHandler("brand_details", (ctx) =>
+    runBrandDetails(ctx, {
+      name: typeof ctx.payload.name === "string" ? ctx.payload.name : null,
+    }),
   );
   registerHandler("pipeline", (ctx) =>
     runPipeline(ctx, { forceScrape: Boolean(ctx.payload.forceScrape) }),

@@ -28,7 +28,8 @@ type Ctx = { params: Promise<{ id: string }> };
  * Idempotent: an already queued/running job of the same type is returned instead.
  */
 export function jobRoute<T extends z.ZodType>(opts: {
-  type: JobType;
+  /** Fixed job type, or chosen from the validated body (e.g. brand names vs details). */
+  type: JobType | ((body: z.infer<T>) => JobType);
   body?: T;
   policy?: RateLimitPolicy;
   bucket?: string;
@@ -41,7 +42,8 @@ export function jobRoute<T extends z.ZodType>(opts: {
     const project = await getProject(id);
     await assertInputsReady(project);
     await opts.check?.(project, body as z.infer<T>);
-    const job = await enqueueJob(id, opts.type, body as Record<string, unknown>);
+    const type = typeof opts.type === "function" ? opts.type(body as z.infer<T>) : opts.type;
+    const job = await enqueueJob(id, type, body as Record<string, unknown>);
     return json({ job }, 202);
   });
 }

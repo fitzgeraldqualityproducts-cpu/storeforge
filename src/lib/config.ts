@@ -35,6 +35,8 @@ const EnvSchema = z.object({
   ),
   SCRAPE_ALLOWLIST: z.preprocess(emptyToUndefined, z.string().default("")),
   DATA_DIR: z.preprocess(emptyToUndefined, z.string().default("data")),
+  /** Download Google Fonts files to outline the logo wordmark ("off" uses live SVG text). */
+  FONT_DOWNLOADS: z.preprocess(emptyToUndefined, z.enum(["on", "off"]).default("on")),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

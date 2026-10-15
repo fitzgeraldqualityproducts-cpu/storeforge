@@ -52,5 +52,7 @@ export const BrandKit = z.object({
   fonts: z.object({ heading: FontChoice, body: FontChoice }).nullable().default(null),
   logoSvg: z.string().nullable().default(null),
   logoPngPath: z.string().nullable().default(null),
+  /** True when the SVG wordmark is outlined paths; false when it fell back to live <text>. */
+  logoOutlined: z.boolean().default(false),
 });
 export type BrandKit = z.infer<typeof BrandKit>;

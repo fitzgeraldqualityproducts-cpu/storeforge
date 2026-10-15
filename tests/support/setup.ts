@@ -10,6 +10,7 @@ process.env.DATA_DIR = path.join(root, "data");
 process.env.DATABASE_URL = `file:${path.join(root, "test.db")}`;
 process.env.AI_MODE = "fixture";
 process.env.STOREFORGE_QUIET = "1";
+process.env.FONT_DOWNLOADS = "off";
 process.env.ANTHROPIC_API_KEY = "";
 process.env.SHOPIFY_STORE_DOMAIN = "";
 process.env.SHOPIFY_ADMIN_ACCESS_TOKEN = "";

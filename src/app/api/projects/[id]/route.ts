@@ -1,6 +1,9 @@
 import { rm } from "node:fs/promises";
 import { z } from "zod";
 import { HttpError, json, parseBody, route } from "@/lib/api";
+import { normalizeHex } from "@/lib/brand/contrast";
+import { resolveFont } from "@/lib/brand/fonts";
+import { renderLogo } from "@/lib/brand/logo";
 import { deleteProject, getProject, updateProject, type ProjectUpdate } from "@/lib/db/projects";
 import { getProjectView } from "@/lib/db/views";
 import { sanitizeListingHtml, sanitizePageHtml } from "@/lib/html/sanitize";
@@ -76,8 +79,38 @@ export const PATCH = route<Ctx>(async (req, { params }) => {
     if (facts(body.analysis) !== facts(current.analysis)) touch("analysis");
   }
   if (body.brandKit !== undefined) {
-    update.brandKit = body.brandKit;
-    touch("brand");
+    const kit = { ...body.brandKit };
+    // Font availability and colour formats are decided here, not trusted from the client.
+    if (kit.fonts) {
+      kit.fonts = {
+        heading: resolveFont(kit.fonts.heading.family),
+        body: resolveFont(kit.fonts.body.family),
+      };
+    }
+    if (kit.palette) {
+      kit.palette = Object.fromEntries(
+        Object.entries(kit.palette).map(([k, v]) => [k, normalizeHex(v)]),
+      ) as typeof kit.palette;
+    }
+    const prev = current.brandKit;
+    const logoInputs = (k: typeof kit | null) =>
+      JSON.stringify([k?.selectedName, k?.fonts?.heading.family, k?.palette]);
+    if (logoInputs(kit) !== logoInputs(prev) || (!kit.logoSvg && kit.palette && kit.fonts)) {
+      const logo = await renderLogo(id, kit);
+      kit.logoSvg = logo?.logoSvg ?? null;
+      kit.logoPngPath = logo?.logoPngPath ?? null;
+      kit.logoOutlined = logo?.logoOutlined ?? false;
+    } else {
+      // The logo files are server-generated; never accept paths from the client.
+      kit.logoSvg = prev?.logoSvg ?? null;
+      kit.logoPngPath = prev?.logoPngPath ?? null;
+      kit.logoOutlined = prev?.logoOutlined ?? false;
+    }
+    update.brandKit = kit;
+    if (JSON.stringify(kit) !== JSON.stringify(prev)) {
+      if (kit.palette && kit.fonts && kit.selectedName) touch("brand");
+      else update.changed!.push("brand");
+    }
   }
   if (body.listing !== undefined) {
     update.listing = {
