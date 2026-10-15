@@ -266,7 +266,7 @@ function SourceCard({
           </div>
         )}
         {specs.length > 0 && (
-          <div className="overflow-x-auto">
+          <div className="relative overflow-x-auto">
             <table className="w-full text-sm">
               <caption className="mb-1 text-left font-medium">Specifications</caption>
               <tbody>

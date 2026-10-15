@@ -4,6 +4,7 @@ import { HttpError, json, parseBody, route } from "@/lib/api";
 import { normalizeHex } from "@/lib/brand/contrast";
 import { resolveFont } from "@/lib/brand/fonts";
 import { renderLogo } from "@/lib/brand/logo";
+import { refreshListingMeta } from "@/lib/listing/meta";
 import { deleteProject, getProject, updateProject, type ProjectUpdate } from "@/lib/db/projects";
 import { getProjectView } from "@/lib/db/views";
 import { sanitizeListingHtml, sanitizePageHtml } from "@/lib/html/sanitize";
@@ -112,14 +113,17 @@ export const PATCH = route<Ctx>(async (req, { params }) => {
       else update.changed!.push("brand");
     }
   }
+  if (body.listingMeta !== undefined) update.listingMeta = body.listingMeta;
   if (body.listing !== undefined) {
-    update.listing = {
+    const listing = {
       ...body.listing,
       descriptionHtml: sanitizeListingHtml(body.listing.descriptionHtml),
     };
+    update.listing = listing;
+    // Placeholders and guardrail hits are derived server-side from what was saved.
+    update.listingMeta = refreshListingMeta(listing, body.listingMeta ?? current.listingMeta);
     touch("listing");
   }
-  if (body.listingMeta !== undefined) update.listingMeta = body.listingMeta;
   if (body.content !== undefined) {
     update.content = {
       ...body.content,

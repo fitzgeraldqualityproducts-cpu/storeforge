@@ -180,3 +180,6 @@
 .prose-store a {
   @apply underline underline-offset-2;
 }
+.confirm-mark {
+  @apply rounded-sm bg-warning/25 px-0.5 text-foreground;
+}

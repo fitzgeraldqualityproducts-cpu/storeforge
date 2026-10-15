@@ -42,9 +42,15 @@ export const ProductListing = z.object({
 export type ProductListing = z.infer<typeof ProductListing>;
 
 export const PricingSuggestion = z.object({
+  currency: z.string().default("USD"),
   unitCost: z.number().nullable(),
   targetMarginPct: z.number().nullable(),
+  targetPrice: z.number().nullable().default(null),
   competitorPrice: z.number().nullable(),
+  /** Where competitorPrice came from, e.g. "reference store" or "source page". */
+  competitorSource: z.string().default(""),
+  /** The price the merchant has actually charged before; the only basis for compare-at. */
+  regularPrice: z.number().nullable().default(null),
   suggestedPrice: z.number(),
   compareAtPrice: z.number().nullable(),
   marginPct: z.number().nullable(),
@@ -67,5 +73,7 @@ export const ListingMeta = z.object({
   pricing: PricingSuggestion.nullable().default(null),
   compareAtEnabled: z.boolean().default(false),
   guardrailViolations: z.array(z.string()).default([]),
+  /** Variant-matrix and other non-blocking notes from the last generation. */
+  warnings: z.array(z.string()).default([]),
 });
 export type ListingMeta = z.infer<typeof ListingMeta>;

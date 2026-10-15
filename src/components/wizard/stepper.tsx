@@ -34,7 +34,7 @@ export function Stepper({
 }) {
   return (
     <nav aria-label="Wizard steps" className="w-full">
-      <ol className="flex gap-1 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
+      <ol className="relative flex gap-1 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
         {WIZARD_STEPS.map((s) => {
           const meta = STEP_META[s];
           const active = s === current;

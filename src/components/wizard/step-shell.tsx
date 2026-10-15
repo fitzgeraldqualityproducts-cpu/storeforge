@@ -42,7 +42,10 @@ export function StepShell({
   const next = idx < WIZARD_STEPS.length - 1 ? WIZARD_STEPS[idx + 1] : null;
 
   return (
-    <section aria-labelledby={`step-${step}-title`} className="animate-fade-up grid gap-6">
+    <section
+      aria-labelledby={`step-${step}-title`}
+      className="animate-fade-up grid grid-cols-[minmax(0,1fr)] gap-6"
+    >
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
           <p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
