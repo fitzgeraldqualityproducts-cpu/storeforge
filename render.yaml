@@ -1,0 +1,23 @@
+# Render Blueprint: one Docker web service with a persistent disk for the SQLite database,
+# uploads and exports. Deploy with the "Deploy to Render" button in README.md.
+services:
+  - type: web
+    name: storeforge
+    runtime: docker
+    plan: starter # persistent disks need a paid instance
+    healthCheckPath: /api/health
+    disk:
+      name: storeforge-data
+      mountPath: /app/data
+      sizeGB: 1
+    envVars:
+      - key: APP_PASSWORD
+        sync: false # you're asked for it on first deploy; the browser prompts for it
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: AI_MODE
+        value: fixture # offline demo; set to "live" once ANTHROPIC_API_KEY is filled in
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-sonnet-5-5
