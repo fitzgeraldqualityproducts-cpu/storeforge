@@ -509,7 +509,7 @@ export function parseProductHtml(html: string, pageUrl: string): ParsedPage {
   const options = ld?.options.length ? ld.options : domOptions;
   const specs = { ...specsFromDom($), ...(ld?.specs ?? {}) };
   const shippingMatch = text.match(
-    /[^.]{0,80}\b(ships?|shipping|delivery|dispatch(?:ed)?)\b[^.]{0,120}\./i,
+    /\b(?:ships?|shipping|delivery|dispatch(?:ed|es)?)\b[^.!?]{3,160}[.!?]/i,
   );
 
   return {

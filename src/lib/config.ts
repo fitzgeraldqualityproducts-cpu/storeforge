@@ -11,10 +11,6 @@ const emptyToUndefined = (v: unknown) =>
 const EnvSchema = z.object({
   ANTHROPIC_API_KEY: z.preprocess(emptyToUndefined, z.string().optional()),
   ANTHROPIC_MODEL: z.preprocess(emptyToUndefined, z.string().default("claude-sonnet-5-5")),
-  ANTHROPIC_REFUSAL_FALLBACK: z.preprocess(
-    emptyToUndefined,
-    z.enum(["default", "off"]).default("default"),
-  ),
   AI_MODE: z.preprocess(emptyToUndefined, z.enum(["live", "fixture"]).default("live")),
   APP_BASE_URL: z.preprocess(emptyToUndefined, z.string().url().default("http://localhost:3000")),
   PUBLIC_IMAGE_BASE_URL: z.preprocess(emptyToUndefined, z.string().url().optional()),

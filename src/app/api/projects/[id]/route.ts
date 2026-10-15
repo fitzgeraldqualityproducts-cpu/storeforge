@@ -11,6 +11,7 @@ import {
   ProductAnalysis,
   ProductListing,
   ProjectInputs,
+  SourceExtraction,
   StoreContent,
   type WizardStep,
 } from "@/lib/schemas";
@@ -24,6 +25,7 @@ const PatchBody = z
     name: z.string().min(1).max(120),
     inputs: ProjectInputs,
     rightsAccepted: z.boolean(),
+    extractions: z.array(SourceExtraction).max(3),
     analysis: ProductAnalysis,
     brandKit: BrandKit,
     listing: ProductListing,
@@ -58,9 +60,20 @@ export const PATCH = route<Ctx>(async (req, { params }) => {
       ? { accepted: true, at: current.rightsAck.accepted ? current.rightsAck.at : now }
       : { accepted: false, at: null };
   }
+  if (body.extractions !== undefined) {
+    // Manual corrections to what was read from the source: the analysis is now out of date.
+    update.extractions = body.extractions;
+    if (JSON.stringify(body.extractions) !== JSON.stringify(current.extractions)) {
+      update.changed!.push("input");
+    }
+  }
   if (body.analysis !== undefined) {
     update.analysis = body.analysis;
-    touch("analysis");
+    // Acknowledging a risk flag doesn't change anything downstream steps consume.
+    const facts = (a: typeof body.analysis | null) =>
+      a &&
+      JSON.stringify({ ...a, riskFlags: a.riskFlags.map((f) => ({ ...f, acknowledged: false })) });
+    if (facts(body.analysis) !== facts(current.analysis)) touch("analysis");
   }
   if (body.brandKit !== undefined) {
     update.brandKit = body.brandKit;

@@ -3,7 +3,7 @@ import { jobRoute } from "@/lib/jobs/start";
 
 export const dynamic = "force-dynamic";
 
-/** Run every step in order: extract → images → analyze → brand → listing → content. */
+/** "Generate everything": run every step in order (see runPipeline). */
 export const POST = jobRoute({
   type: "pipeline",
   body: z.object({ forceScrape: z.boolean().default(false) }),

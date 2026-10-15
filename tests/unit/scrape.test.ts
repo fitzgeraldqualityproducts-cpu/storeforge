@@ -110,6 +110,9 @@ describe("parsing", () => {
     expect(r.options[0]!.values).toEqual(["Sand", "Sage", "Clay"]);
     expect(r.fetchMethod).toBe("static");
     expect(r.language).toBe("en");
+    expect(r.shippingInfo).toBe(
+      "Shipping: ships from our studio in Portland, Oregon within 3 business days.",
+    );
     const urls = selectImageCandidates(r.images).map((c) => c.url);
     expect(urls.slice(0, 3)).toEqual(
       [1, 2, 3].map((n) => `${site.origin}/images/dripper-${n}.jpg`),

@@ -59,3 +59,14 @@ of each section.
 - **Ordering**: a hero you pick by hand stays first; otherwise vision roles order the gallery hero → angle → lifestyle → detail → infographic, then quality. Watermarked/text-overlay images are never the hero when a clean image exists.
 - **Background removal**: remove.bg or Photoroom via `REMOVE_BG_PROVIDER`/`REMOVE_BG_API_KEY`; the toggle is disabled when unconfigured.
 - Processed file names include a content digest, which doubles as the browser cache-buster. Export names (`<handle>-<position>.webp`) are assigned when the bundle is built.
+
+## AI layer (M5)
+- **Structured output**: one tool per task whose `input_schema` is generated from the Zod schema (`z.toJSONSchema`, input side). Current Claude models reject forced `tool_choice` ("any"/"tool"), so the tool is offered with `tool_choice: auto` (+ `disable_parallel_tool_use`) and the system prompt says to call it; a reply without the call counts as a failed attempt. Output is validated with Zod plus task-specific checks (guardrails, lengths); failures are sent back as an `is_error` tool_result, max 2 retries, then a user-visible error.
+- **Streaming**: requests use `messages.stream(...).finalMessage()` so long generations never hit HTTP timeouts.
+- **Effort**: `output_config.effort` = medium for generation, low for alt text and the scrape fallback.
+- **Refusals** (`stop_reason: "refusal"`) stop immediately with a clear message; they aren't retried. No server-side refusal fallback is configured (it is a beta, and the categories it retries don't apply to store copy).
+- **Fixture mode** (`AI_MODE=fixture`): each task has a deterministic generator built from the project's real inputs, so tests and offline demos exercise the full pipeline. The scrape fallback reports nothing in fixture mode rather than invent page data.
+- **Logging**: every call (live or fixture) writes an `AiCall` row with tokens, latency, attempts and error; shown on `/admin/runs` in dev.
+- **Guardrails** are deterministic regexes (`src/lib/guardrails`) for fake reviews/ratings, urgency, medical claims, unverifiable superlatives, credentials and supplier mentions. They run on AI output (violations trigger a retry) and on source text as rule-based risk flags. Rule flags are kept even if the AI disagrees; AI flags duplicating a rule's category+severity are dropped. Risk acknowledgements survive re-runs (stable ids) and don't mark downstream steps stale.
+- **Prompt injection**: scraped text and merchant notes are wrapped in `<source>` tags and every prompt says to treat them as data.
+- **Vision**: up to 8 images per call, downscaled to 1568px JPEG. Images added after the analysis get alt text from a lighter `describeImages` call during image processing.

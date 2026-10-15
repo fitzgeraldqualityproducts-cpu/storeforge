@@ -58,6 +58,7 @@ type PatchBody = Partial<{
   name: string;
   inputs: ProjectView["project"]["inputs"];
   rightsAccepted: boolean;
+  extractions: ProjectView["project"]["extractions"];
   analysis: NonNullable<ProjectView["project"]["analysis"]>;
   brandKit: NonNullable<ProjectView["project"]["brandKit"]>;
   listing: NonNullable<ProjectView["project"]["listing"]>;
