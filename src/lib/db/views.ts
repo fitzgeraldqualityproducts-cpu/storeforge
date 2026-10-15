@@ -4,6 +4,7 @@ import { listAssets } from "./assets";
 import { prisma } from "./client";
 import { getProject } from "./projects";
 import { listExports } from "./exports";
+import { projectPreflight } from "./preflight";
 
 /** Everything the wizard needs in one payload. */
 export async function getProjectView(id: string) {
@@ -21,6 +22,7 @@ export async function getProjectView(id: string) {
   return {
     project,
     assets,
+    preflight: await projectPreflight(project, assets),
     jobs,
     exports,
     aiUsage: {

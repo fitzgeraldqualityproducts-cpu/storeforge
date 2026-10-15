@@ -1,4 +1,6 @@
 import { HttpError, json, parseBody, rateLimit, route } from "@/lib/api";
+import { listAssets } from "@/lib/db/assets";
+import { projectPreflight } from "@/lib/db/preflight";
 import { getProject } from "@/lib/db/projects";
 import { assertInputsReady } from "@/lib/jobs/start";
 import { enqueueJob } from "@/lib/jobs/runner";
@@ -36,6 +38,18 @@ export const POST = route<Ctx>(async (req, { params }) => {
       422,
       `Confirm the push: this creates and updates resources in ${creds.domain}.`,
     );
+  }
+  if (!body.dryRun) {
+    const preflight = await projectPreflight(project, await listAssets(id));
+    if (!preflight.ok) {
+      throw new HttpError(
+        422,
+        `Fix the pre-flight checklist before pushing: ${preflight.items
+          .filter((i) => i.status === "fail")
+          .map((i) => i.label)
+          .join(", ")}.`,
+      );
+    }
   }
   stashForJob(id, creds);
   const job = await enqueueJob(id, "export_shopify", { ...body, storeDomain: creds.domain });

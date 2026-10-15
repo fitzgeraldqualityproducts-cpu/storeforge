@@ -20,6 +20,7 @@ import type { BundleOptions } from "@/lib/schemas";
 import { cn } from "@/lib/utils";
 import { useActiveJob, useJobRunning, useStartJob, useWizard } from "../context";
 import { EmptyState, StepShell } from "../step-shell";
+import { PreflightCard, StoreReadyCard, SupplierDisclaimer } from "./preflight";
 import { ShopifyPushCard } from "./shopify-push";
 
 const EXPORT_JOBS = ["export_bundle"];
@@ -359,6 +360,9 @@ export function ExportStep() {
     >
       {ready ? (
         <>
+          <StoreReadyCard />
+          <PreflightCard />
+          <SupplierDisclaimer />
           <BundleCard />
           <ExportsCard exports={view.exports} />
           <ShopifyPushCard />

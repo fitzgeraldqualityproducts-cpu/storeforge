@@ -1,5 +1,11 @@
 /** Shared text helpers for listing fields (isomorphic). */
 
+/** Length limits enforced on listing fields (SEO guidance; Shopify's own limits are higher). */
+export const SEO_TITLE_MAX = 60;
+export const SEO_DESCRIPTION_MAX = 155;
+export const HANDLE_MAX = 60;
+export const ALT_MAX = 125;
+
 /** Truncate at a word boundary so the result is at most `max` characters. */
 export function truncateAtWord(text: string, max: number): string {
   const t = text.replace(/\s+/g, " ").trim();

@@ -420,12 +420,16 @@ export function ShopifyPushCard() {
               </Button>
               <Button
                 variant="ember"
-                disabled={running || start.isPending || !dryRun}
+                disabled={running || start.isPending || !dryRun || !view.preflight.ok}
                 onClick={() => setConfirmOpen(true)}
               >
                 <UploadCloudIcon /> Push to Shopify…
               </Button>
-              {!dryRun && !running ? (
+              {!view.preflight.ok ? (
+                <p className="text-xs text-muted-foreground">
+                  Fix the pre-flight checklist before pushing.
+                </p>
+              ) : !dryRun && !running ? (
                 <p className="text-xs text-muted-foreground">Run a dry run for this store first.</p>
               ) : null}
               {running && last ? (

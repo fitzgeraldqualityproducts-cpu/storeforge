@@ -3,7 +3,14 @@ import { z } from "zod";
 import type { ProjectRecord } from "@/lib/db/projects";
 import { describeViolations, findViolationsDeep, WATCHED_BRANDS } from "@/lib/guardrails";
 import { sanitizeListingHtml } from "@/lib/html/sanitize";
-import { toHandle, truncateAtWord } from "@/lib/listing/text";
+import {
+  ALT_MAX,
+  HANDLE_MAX,
+  SEO_DESCRIPTION_MAX,
+  SEO_TITLE_MAX,
+  toHandle,
+  truncateAtWord,
+} from "@/lib/listing/text";
 import type { ImageAsset, PricingSuggestion } from "@/lib/schemas";
 import { productFacts, styleOf } from "./context";
 import { fixtureListing, fixtureSeo } from "./fixtures/listing";
@@ -121,10 +128,7 @@ const SeoOutput = z.object({
   ),
 });
 
-export const SEO_TITLE_MAX = 60;
-export const SEO_DESCRIPTION_MAX = 155;
-export const HANDLE_MAX = 60;
-export const ALT_MAX = 125;
+export { ALT_MAX, HANDLE_MAX, SEO_DESCRIPTION_MAX, SEO_TITLE_MAX };
 
 /**
  * SEO pass: title, meta description, handle and alt text. Lengths are enforced in code
