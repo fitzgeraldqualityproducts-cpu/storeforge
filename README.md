@@ -56,6 +56,7 @@ Playwright's default location, point at it: `CHROMIUM_PATH=/path/to/chromium npm
 | `SHOPIFY_API_VERSION`        | `2026-10`                      | Admin GraphQL API version.                                                                                           |
 | `SHOPIFY_THEME_SOURCE_URL`   | Dawn v16.0.0 archive on GitHub | ZIP used when the push creates a new unpublished Dawn theme.                                                         |
 | `SESSION_SECRET`             | random per process             | 32+ characters; encrypts the session-only Shopify token cookie. Unset means tokens are forgotten on restart.         |
+| `APP_PASSWORD`               | (none)                         | When set, the browser asks for this password (any username) before opening the app. Set it on any public deploy.     |
 | `REMOVE_BG_PROVIDER`         | `none`                         | `removebg` or `photoroom` for optional background removal.                                                           |
 | `REMOVE_BG_API_KEY`          | (none)                         | Key for that provider.                                                                                               |
 | `MAX_UPLOAD_MB`              | `15`                           | Per-image upload limit.                                                                                              |
@@ -64,6 +65,27 @@ Playwright's default location, point at it: `CHROMIUM_PATH=/path/to/chromium npm
 | `DATA_RETENTION_DAYS`        | `30`                           | Projects older than this are deleted (at startup and daily).                                                         |
 | `SCRAPE_ALLOWLIST`           | (empty)                        | `host:port` pairs the scraper may fetch even though they're private. For local fixtures only.                        |
 | `FONT_DOWNLOADS`             | `on`                           | Download Google Fonts to draw the logo wordmark as outlines; `off` uses live SVG text.                               |
+
+## Deploy to a web link
+
+StoreForge needs a host that keeps files between restarts (SQLite, uploads and exports live in
+`data/`) and runs one long-lived Node process (the job runner). Serverless hosts like Vercel
+don't fit. The repo ships a `Dockerfile` and a Render Blueprint (`render.yaml`):
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/fitzgeraldqualityproducts-cpu/storeforge)
+
+1. Click the button (or in Render: **New → Blueprint** and pick this repo), and connect GitHub.
+2. Enter an `APP_PASSWORD` when asked. Leave `ANTHROPIC_API_KEY` empty to start with the offline
+   demo (`AI_MODE=fixture`).
+3. Apply. Render builds the image and gives you a `https://….onrender.com` address; the browser
+   asks for the password (any username).
+4. To use real AI, set `ANTHROPIC_API_KEY` and change `AI_MODE` to `live` under the service's
+   **Environment** tab.
+
+The Blueprint uses Render's Starter instance with a 1 GB disk mounted at `/app/data`, because
+free instances can't keep a disk. `APP_BASE_URL` defaults to Render's public address, so
+"Public URL mode" image links work without extra setup. Any Docker host works the same way:
+mount persistent storage at `/app/data` and set `APP_PASSWORD`.
 
 ## How it works
 

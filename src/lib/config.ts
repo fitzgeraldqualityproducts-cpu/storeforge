@@ -50,7 +50,11 @@ let cached: Env | null = null;
 /** Parsed, validated server environment. Never import this from client components. */
 export function env(): Env {
   if (cached) return cached;
-  const parsed = EnvSchema.safeParse(process.env);
+  const parsed = EnvSchema.safeParse({
+    ...process.env,
+    // Render sets RENDER_EXTERNAL_URL to the service's public address.
+    APP_BASE_URL: process.env.APP_BASE_URL || process.env.RENDER_EXTERNAL_URL,
+  });
   if (!parsed.success) {
     const msg = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
     throw new Error(`Invalid environment configuration: ${msg}`);
