@@ -125,6 +125,19 @@ test.describe.serial("fixture product to Shopify bundle", () => {
 
     await page.goto(`/projects/${urlProjectId}?step=export`);
     await expect(page.getByRole("heading", { name: "Pre-flight checklist" })).toBeVisible();
+    const preview = page.locator('[data-slot="card"]', {
+      has: page.getByText("Preview your store", { exact: true }),
+    });
+    await expect(preview.getByRole("tab", { name: "Product page" })).toBeVisible();
+    await page.getByRole("button", { name: "Full screen" }).click();
+    const dialog = page.getByRole("dialog", { name: "Store preview" });
+    await dialog.getByRole("tab", { name: "Product page" }).click();
+    await expect(dialog.getByRole("tab", { name: "Product page" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
     await expect(
       page.getByText("doesn't verify supplier reliability, product safety, or regulatory"),
     ).toBeVisible();

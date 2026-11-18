@@ -1,15 +1,11 @@
 "use client";
 import {
-  EyeIcon,
   FileTextIcon,
   LayoutTemplateIcon,
   Loader2Icon,
   LockIcon,
-  MonitorIcon,
   PlusIcon,
   ScaleIcon,
-  SmartphoneIcon,
-  StoreIcon,
   Trash2Icon,
   TriangleAlertIcon,
 } from "lucide-react";
@@ -31,7 +27,6 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { StorefrontPreview, type PreviewPage } from "@/components/storefront/storefront-preview";
 import {
   ANNOUNCEMENT_MAX,
   BADGE_ICONS,
@@ -50,12 +45,12 @@ import type {
   StoreContent,
   StorePage,
 } from "@/lib/schemas";
-import { assetUrl } from "../dropzone";
 import { useActiveJob, useJobRunning, usePatchProject, useStartJob, useWizard } from "../context";
 import { EditableList, EditableText } from "../editable";
 import { Field } from "../field";
 import { FieldActions } from "../field-actions";
 import { EmptyState, StepShell } from "../step-shell";
+import { StorePreviewPanel } from "../preview-panel";
 
 const CONTENT_JOBS = ["content", "regenerate", "pipeline"];
 
@@ -1007,66 +1002,6 @@ function SettingsEditor({ content, save }: { content: StoreContent; save: Save }
 }
 
 /* ------------------------------------------------------------------------------------------ */
-/* Preview                                                                                    */
-/* ------------------------------------------------------------------------------------------ */
-
-function PreviewPanel({ content }: { content: StoreContent }) {
-  const { view, projectId } = useWizard();
-  const [page, setPage] = useState<PreviewPage>("home");
-  const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
-  const { brandKit, listing, inputs, steps } = view.project;
-  const images = view.assets
-    .filter((a) => !a.discarded)
-    .map((a) => ({ url: assetUrl(projectId, a, true), alt: a.altText }));
-  const logoUrl = brandKit?.logoSvg
-    ? `/api/projects/${projectId}/brand/logo?format=svg&v=${encodeURIComponent(steps.brand.updatedAt ?? "")}`
-    : null;
-  return (
-    <div className="grid grid-cols-[minmax(0,1fr)] gap-3">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Tabs value={page} onValueChange={(v) => setPage(v as PreviewPage)}>
-          <TabsList aria-label="Preview page">
-            <TabsTrigger value="home">Homepage</TabsTrigger>
-            <TabsTrigger value="product">Product page</TabsTrigger>
-          </TabsList>
-        </Tabs>
-        <Tabs value={device} onValueChange={(v) => setDevice(v as "desktop" | "mobile")}>
-          <TabsList aria-label="Preview device">
-            <TabsTrigger value="desktop">
-              <MonitorIcon aria-hidden="true" /> Desktop
-            </TabsTrigger>
-            <TabsTrigger value="mobile">
-              <SmartphoneIcon aria-hidden="true" /> Mobile
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-      <p className="flex items-center gap-2 text-xs text-muted-foreground">
-        <EyeIcon className="size-4" aria-hidden="true" />A visual approximation using your brand
-        kit. Your Shopify theme will look different.
-      </p>
-      {brandKit ? (
-        <StorefrontPreview
-          brand={brandKit}
-          listing={listing}
-          content={content}
-          images={images}
-          currency={inputs.context.currency}
-          logoUrl={logoUrl}
-          page={page}
-          onNavigate={setPage}
-          device={device}
-        />
-      ) : (
-        <EmptyState icon={StoreIcon} title="No brand kit yet">
-          Create the brand kit to preview the store in your colours and fonts.
-        </EmptyState>
-      )}
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------------------------------ */
 
 export function ContentStep() {
   const { view } = useWizard();
@@ -1111,7 +1046,7 @@ export function ContentStep() {
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
             <TabsContent value="preview">
-              <PreviewPanel content={content} />
+              <StorePreviewPanel content={content} />
             </TabsContent>
             <TabsContent value="home">
               <HomepageEditor content={content} save={save} />

@@ -4,7 +4,9 @@ import {
   CheckCircle2Icon,
   ClipboardCopyIcon,
   DownloadIcon,
+  EyeIcon,
   FileArchiveIcon,
+  Maximize2Icon,
   Loader2Icon,
   PackageIcon,
   XCircleIcon,
@@ -15,10 +17,19 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import type { ExportView } from "@/lib/db/exports";
-import type { BundleOptions } from "@/lib/schemas";
+import type { BundleOptions, StoreContent } from "@/lib/schemas";
 import { cn } from "@/lib/utils";
 import { useActiveJob, useJobRunning, useStartJob, useWizard } from "../context";
+import { StorePreviewPanel } from "../preview-panel";
 import { EmptyState, StepShell } from "../step-shell";
 import { PreflightCard, StoreReadyCard, SupplierDisclaimer } from "./preflight";
 import { ShopifyPushCard } from "./shopify-push";
@@ -348,6 +359,43 @@ function CopyCard() {
   );
 }
 
+/** Lets the merchant look over the store before downloading the bundle or pushing it. */
+function StorePreviewCard({ content }: { content: StoreContent }) {
+  return (
+    <Card>
+      <CardHeader className="flex-row flex-wrap items-start justify-between gap-3">
+        <div className="grid gap-1.5">
+          <CardTitle className="flex items-center gap-2">
+            <EyeIcon className="size-5" aria-hidden="true" /> Preview your store
+          </CardTitle>
+          <CardDescription>
+            Check the homepage and product page before you download or push to Shopify.
+          </CardDescription>
+        </div>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm">
+              <Maximize2Icon aria-hidden="true" /> Full screen
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="h-[95vh] max-h-[95vh] w-[calc(100%-2rem)] max-w-[min(1400px,calc(100%-2rem))] grid-rows-[auto_minmax(0,1fr)]">
+            <DialogHeader>
+              <DialogTitle>Store preview</DialogTitle>
+              <DialogDescription>Nothing here is published until you push it.</DialogDescription>
+            </DialogHeader>
+            <div className="min-h-0 overflow-y-auto">
+              <StorePreviewPanel content={content} />
+            </div>
+          </DialogContent>
+        </Dialog>
+      </CardHeader>
+      <CardContent>
+        <StorePreviewPanel content={content} />
+      </CardContent>
+    </Card>
+  );
+}
+
 export function ExportStep() {
   const { view } = useWizard();
   const { listing, content } = view.project;
@@ -361,6 +409,7 @@ export function ExportStep() {
       {ready ? (
         <>
           <StoreReadyCard />
+          {content && <StorePreviewCard content={content} />}
           <PreflightCard />
           <SupplierDisclaimer />
           <BundleCard />
