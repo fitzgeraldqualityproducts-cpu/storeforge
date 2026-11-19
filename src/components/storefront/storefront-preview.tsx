@@ -18,10 +18,12 @@ import {
   ThermometerIcon,
   TruckIcon,
   Undo2Icon,
+  XIcon,
   type LucideIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { googleFontsHref } from "@/lib/brand/fonts";
+import { productPath, resolvePreviewRoute } from "@/lib/content/preview-routes";
 import { highlightPlaceholders } from "@/lib/listing/text";
 import type { BrandKit, ProductListing, StoreContent } from "@/lib/schemas";
 import { cn, formatMoney } from "@/lib/utils";
@@ -48,10 +50,9 @@ export interface PreviewImage {
   alt: string;
 }
 
-export type PreviewPage = "home" | "product";
-
 /**
- * In-app mock of the storefront (homepage and product page) using the brand kit. It is a visual
+ * In-app mock of the storefront using the brand kit: homepage, product page, collection, search
+ * and every generated page and policy, linked through the store's real menus. It is a visual
  * approximation of a Shopify theme, not the theme itself. Layout responds to the frame width
  * (container queries), so the mobile toggle shows the real mobile layout.
  */
@@ -62,9 +63,10 @@ export function StorefrontPreview({
   images,
   currency,
   logoUrl,
-  page,
+  path,
   onNavigate,
   device,
+  toolbar,
 }: {
   brand: BrandKit;
   listing: ProductListing | null;
@@ -72,10 +74,24 @@ export function StorefrontPreview({
   images: PreviewImage[];
   currency: string;
   logoUrl: string | null;
-  page: PreviewPage;
-  onNavigate: (p: PreviewPage) => void;
+  /** Storefront path being shown, e.g. "/" or "/pages/about-us". */
+  path: string;
+  onNavigate: (path: string) => void;
   device: "desktop" | "mobile";
+  /** Rendered above the store inside the frame (the browser bar). */
+  toolbar?: React.ReactNode;
 }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const go = (to: string) => {
+    setMenuOpen(false);
+    onNavigate(to);
+  };
+  // Like a real page load: bring the top of the store back into view when the page changes.
+  useEffect(() => {
+    const el = rootRef.current;
+    if (el && el.getBoundingClientRect().top < 0) el.scrollIntoView({ block: "start" });
+  }, [path]);
   const palette = brand.palette ?? {
     primary: "#1f2937",
     secondary: "#4b5563",
@@ -99,11 +115,16 @@ export function StorefrontPreview({
   } as React.CSSProperties;
   const storeName = content.settings.storeName || brand.selectedName || "Your store";
   const price = listing?.variants[0]?.price;
+  const priceText = price != null ? formatMoney(price, currency) : null;
+  const route = resolvePreviewRoute(path, content);
+  const toProduct = () => go(productPath(listing));
+  const linkStyle = "rounded text-left underline-offset-4 hover:underline";
 
   return (
     <div
+      ref={rootRef}
       className={cn(
-        "mx-auto w-full transition-[max-width]",
+        "mx-auto w-full scroll-mt-24 transition-[max-width]",
         device === "mobile" ? "max-w-[390px]" : "max-w-none",
       )}
     >
@@ -118,6 +139,7 @@ export function StorefrontPreview({
         }}
         data-testid="storefront-preview"
       >
+        {toolbar}
         {content.announcementBar ? (
           <p
             className="px-4 py-2 text-center text-xs"
@@ -130,11 +152,23 @@ export function StorefrontPreview({
           className="flex items-center justify-between gap-4 border-b px-4 py-3 @3xl:px-8"
           style={{ borderColor: "color-mix(in srgb, var(--sf-text) 12%, transparent)" }}
         >
-          <MenuIcon className="size-5 @3xl:hidden" aria-hidden="true" />
+          <button
+            type="button"
+            className="rounded @3xl:hidden"
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label={menuOpen ? "Close store menu" : "Open store menu"}
+            aria-expanded={menuOpen}
+          >
+            {menuOpen ? (
+              <XIcon className="size-5" aria-hidden="true" />
+            ) : (
+              <MenuIcon className="size-5" aria-hidden="true" />
+            )}
+          </button>
           <button
             type="button"
             className="min-w-0 truncate rounded"
-            onClick={() => onNavigate("home")}
+            onClick={() => go("/")}
             aria-label={`${storeName} home`}
           >
             {logoUrl ? (
@@ -151,31 +185,77 @@ export function StorefrontPreview({
               </span>
             )}
           </button>
-          <nav aria-label="Preview main menu" className="hidden gap-5 text-sm @3xl:flex">
+          <nav aria-label="Store main menu" className="hidden gap-5 text-sm @3xl:flex">
             {content.menus.main.map((m) => (
-              <span key={m.url + m.title}>{m.title}</span>
+              <button
+                key={m.url + m.title}
+                type="button"
+                className={linkStyle}
+                onClick={() => go(m.url)}
+                aria-current={m.url === path ? "page" : undefined}
+              >
+                {m.title}
+              </button>
             ))}
           </nav>
           <span className="flex items-center gap-3">
-            <SearchIcon className="size-5" aria-hidden="true" />
+            <button type="button" className="rounded" onClick={() => go("/search")}>
+              <SearchIcon className="size-5" aria-hidden="true" />
+              <span className="sr-only">Search the store</span>
+            </button>
             <ShoppingBagIcon className="size-5" aria-hidden="true" />
           </span>
         </header>
+        {menuOpen ? (
+          <nav
+            aria-label="Store mobile menu"
+            className="grid border-b px-4 py-2 text-base @3xl:hidden"
+            style={{ borderColor: "color-mix(in srgb, var(--sf-text) 12%, transparent)" }}
+          >
+            {content.menus.main.map((m) => (
+              <button
+                key={m.url + m.title}
+                type="button"
+                className="py-2 text-left"
+                onClick={() => go(m.url)}
+              >
+                {m.title}
+              </button>
+            ))}
+          </nav>
+        ) : null}
 
-        {page === "home" ? (
+        {route.kind === "home" ? (
           <HomePage
             content={content}
             listing={listing}
             image={images[0] ?? null}
-            price={price != null ? formatMoney(price, currency) : null}
-            onShop={() => onNavigate("product")}
+            price={priceText}
+            onShop={toProduct}
+            onNavigate={go}
           />
-        ) : (
-          <ProductPage
+        ) : route.kind === "product" ? (
+          <ProductPage key={path} listing={listing} images={images} price={priceText} />
+        ) : route.kind === "collection" || route.kind === "search" ? (
+          <CollectionPage
+            title={route.kind === "search" ? "Search" : route.title}
+            descriptionHtml={route.kind === "search" ? "" : route.descriptionHtml}
+            search={route.kind === "search"}
             listing={listing}
-            images={images}
-            price={price != null ? formatMoney(price, currency) : null}
+            image={images[0] ?? null}
+            price={priceText}
+            onOpen={toProduct}
           />
+        ) : route.kind === "page" ? (
+          <InfoPage title={route.title} bodyHtml={route.bodyHtml} />
+        ) : (
+          <main className="grid justify-items-center gap-4 px-4 py-20 text-center">
+            <SectionHeading>Page not found</SectionHeading>
+            <p className="text-sm opacity-80">
+              This link points somewhere StoreForge didn&apos;t create.
+            </p>
+            <PrimaryButton onClick={() => go("/")}>Back to the homepage</PrimaryButton>
+          </main>
         )}
 
         <footer
@@ -195,7 +275,11 @@ export function StorefrontPreview({
           </div>
           <ul className="flex flex-wrap gap-x-4 gap-y-1" aria-label="Preview footer menu">
             {content.menus.footer.map((m) => (
-              <li key={m.url + m.title}>{m.title}</li>
+              <li key={m.url + m.title}>
+                <button type="button" className={linkStyle} onClick={() => go(m.url)}>
+                  {m.title}
+                </button>
+              </li>
             ))}
           </ul>
           <p className="text-xs opacity-70 @3xl:col-span-2">© {storeName}</p>
@@ -253,12 +337,14 @@ function HomePage({
   image,
   price,
   onShop,
+  onNavigate,
 }: {
   content: StoreContent;
   listing: ProductListing | null;
   image: PreviewImage | null;
   price: string | null;
   onShop: () => void;
+  onNavigate: (path: string) => void;
 }) {
   return (
     <main>
@@ -281,7 +367,15 @@ function HomePage({
                   </h2>
                   <p className="max-w-prose text-base opacity-85">{s.subheadline}</p>
                   <div>
-                    <PrimaryButton onClick={onShop}>{s.ctaLabel}</PrimaryButton>
+                    <PrimaryButton
+                      onClick={() =>
+                        s.ctaLink && resolvePreviewRoute(s.ctaLink, content).kind !== "missing"
+                          ? onNavigate(s.ctaLink)
+                          : onShop()
+                      }
+                    >
+                      {s.ctaLabel}
+                    </PrimaryButton>
                   </div>
                 </div>
                 <ProductImage image={image} />
@@ -500,6 +594,75 @@ function ProductPage({
           dangerouslySetInnerHTML={{ __html: highlightPlaceholders(listing.descriptionHtml) }}
         />
       </div>
+    </main>
+  );
+}
+
+function CollectionPage({
+  title,
+  descriptionHtml,
+  search,
+  listing,
+  image,
+  price,
+  onOpen,
+}: {
+  title: string;
+  descriptionHtml: string;
+  search: boolean;
+  listing: ProductListing | null;
+  image: PreviewImage | null;
+  price: string | null;
+  onOpen: () => void;
+}) {
+  return (
+    <main className="grid gap-6 px-4 py-10 @3xl:px-8 @3xl:py-14">
+      <div className="grid gap-3">
+        <h2 className="text-3xl leading-tight" style={{ fontFamily: "var(--sf-heading)" }}>
+          {title}
+        </h2>
+        {search ? (
+          <span
+            className="flex h-11 max-w-md items-center gap-2 rounded-md border px-3 text-sm opacity-70"
+            style={{ borderColor: "color-mix(in srgb, var(--sf-text) 30%, transparent)" }}
+            aria-hidden="true"
+          >
+            <SearchIcon className="size-4" /> Search
+          </span>
+        ) : descriptionHtml ? (
+          <div
+            className="prose-store prose-storefront max-w-prose text-sm"
+            dangerouslySetInnerHTML={{ __html: highlightPlaceholders(descriptionHtml) }}
+          />
+        ) : null}
+      </div>
+      {listing ? (
+        <ul className="grid grid-cols-2 gap-4 @3xl:grid-cols-4">
+          <li>
+            <button type="button" onClick={onOpen} className="grid w-full gap-2 text-left">
+              <ProductImage image={image} />
+              <span className="text-sm">{listing.title}</span>
+              {price ? <span className="text-sm opacity-80">{price}</span> : null}
+            </button>
+          </li>
+        </ul>
+      ) : (
+        <p className="text-sm opacity-80">Write the product listing to see it here.</p>
+      )}
+    </main>
+  );
+}
+
+function InfoPage({ title, bodyHtml }: { title: string; bodyHtml: string }) {
+  return (
+    <main className="mx-auto grid w-full max-w-3xl gap-5 px-4 py-10 @3xl:px-8 @3xl:py-14">
+      <h2 className="text-3xl leading-tight" style={{ fontFamily: "var(--sf-heading)" }}>
+        {title}
+      </h2>
+      <div
+        className="prose-store prose-storefront text-sm"
+        dangerouslySetInnerHTML={{ __html: highlightPlaceholders(bodyHtml) }}
+      />
     </main>
   );
 }

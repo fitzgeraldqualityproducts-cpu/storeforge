@@ -17,19 +17,11 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import type { ExportView } from "@/lib/db/exports";
 import type { BundleOptions, StoreContent } from "@/lib/schemas";
 import { cn } from "@/lib/utils";
 import { useActiveJob, useJobRunning, useStartJob, useWizard } from "../context";
-import { StorePreviewPanel } from "../preview-panel";
+import { StorePreviewDialog, StorePreviewPanel } from "../preview-panel";
 import { EmptyState, StepShell } from "../step-shell";
 import { PreflightCard, StoreReadyCard, SupplierDisclaimer } from "./preflight";
 import { ShopifyPushCard } from "./shopify-push";
@@ -372,22 +364,14 @@ function StorePreviewCard({ content }: { content: StoreContent }) {
             Check the homepage and product page before you download or push to Shopify.
           </CardDescription>
         </div>
-        <Dialog>
-          <DialogTrigger asChild>
+        <StorePreviewDialog
+          content={content}
+          trigger={
             <Button variant="outline" size="sm">
               <Maximize2Icon aria-hidden="true" /> Full screen
             </Button>
-          </DialogTrigger>
-          <DialogContent className="h-[95vh] max-h-[95vh] w-[calc(100%-2rem)] max-w-[min(1400px,calc(100%-2rem))] grid-rows-[auto_minmax(0,1fr)]">
-            <DialogHeader>
-              <DialogTitle>Store preview</DialogTitle>
-              <DialogDescription>Nothing here is published until you push it.</DialogDescription>
-            </DialogHeader>
-            <div className="min-h-0 overflow-y-auto">
-              <StorePreviewPanel content={content} />
-            </div>
-          </DialogContent>
-        </Dialog>
+          }
+        />
       </CardHeader>
       <CardContent>
         <StorePreviewPanel content={content} />

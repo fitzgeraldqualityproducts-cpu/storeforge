@@ -136,8 +136,32 @@ test.describe.serial("fixture product to Shopify bundle", () => {
       "aria-selected",
       "true",
     );
+    // The store is clickable like a real site: menus open pages, and back works.
+    await dialog
+      .getByRole("navigation", { name: "Store main menu" })
+      .getByRole("button", { name: "About" })
+      .click();
+    await expect(dialog.getByRole("heading", { name: "About us" })).toBeVisible();
+    await expect(dialog.getByLabel("Page address")).toContainText("/pages/about-us");
+    await dialog.getByRole("button", { name: "Refund policy" }).click();
+    await expect(dialog.getByLabel("Page address")).toContainText("/policies/refund-policy");
+    await dialog.getByRole("button", { name: "Back", exact: true }).click();
+    await expect(dialog.getByLabel("Page address")).toContainText("/pages/about-us");
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
+
+    // Reachable from the header on any step, and on its own page.
+    await page.goto(`/projects/${urlProjectId}?step=brand`);
+    await page.getByRole("button", { name: "Preview store" }).click();
+    await expect(
+      page.getByRole("dialog", { name: "Store preview" }).getByTestId("storefront-preview"),
+    ).toBeVisible();
+    await page.keyboard.press("Escape");
+    await page.goto(`/projects/${urlProjectId}/preview?path=/pages/contact`);
+    await expect(page.getByRole("heading", { name: "Contact", level: 2 })).toBeVisible();
+    await page.getByRole("button", { name: /home$/ }).first().click();
+    await expect(page).toHaveURL(new RegExp(`/projects/${urlProjectId}/preview$`));
+    await page.goto(`/projects/${urlProjectId}?step=export`);
     await expect(
       page.getByText("doesn't verify supplier reliability, product safety, or regulatory"),
     ).toBeVisible();
