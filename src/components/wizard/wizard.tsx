@@ -14,6 +14,7 @@ import { describeError } from "@/lib/client/api";
 import { WIZARD_STEPS, type WizardStep } from "@/lib/schemas";
 import { WizardProvider, useStartJob, type WizardCtx } from "./context";
 import { JobStrip } from "./job-strip";
+import { HeaderPreviewButton } from "./preview-panel";
 import { STEP_JOBS } from "./step-meta";
 import { Stepper } from "./stepper";
 import { InputStep } from "./steps/input-step";
@@ -138,6 +139,7 @@ export function Wizard({
               </span>
             </div>
             <div className="flex items-center gap-2">
+              <HeaderPreviewButton />
               <RunAllButton />
               <ThemeToggle />
             </div>
